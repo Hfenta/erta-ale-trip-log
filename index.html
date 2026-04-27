@@ -1,0 +1,2242 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- PWA: Mobile web app capable -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Erta Ale Trip Log">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="Erta Ale Trip Log">
+  <meta name="theme-color" content="#1a56db">
+
+  <!-- PWA: Inline manifest as data URI -->
+  <link rel="manifest" href='data:application/manifest+json,{"name":"Erta Ale Daily Trip Log","short_name":"Erta Ale","description":"Driver trip log for daily transport service","start_url":".","display":"standalone","orientation":"any","background_color":"%231a56db","theme_color":"%231a56db","icons":[{"src":"data:image/svg%2bxml;utf8,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 192 192%22%3E%3Crect width%3D%22192%22 height%3D%22192%22 rx%3D%2240%22 fill%3D%22%231a56db%22%2F%3E%3Ctext x%3D%2296%22 y%3D%22128%22 font-family%3D%22Arial%2Csans-serif%22 font-size%3D%2272%22 font-weight%3D%22700%22 fill%3D%22white%22 text-anchor%3D%22middle%22%3EE%3C%2Ftext%3E%3C%2Fsvg%3E","sizes":"192x192","type":"image/svg+xml"},{"src":"data:image/svg%2bxml;utf8,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 512 512%22%3E%3Crect width%3D%22512%22 height%3D%22512%22 rx%3D%22107%22 fill%3D%22%231a56db%22%2F%3E%3Ctext x%3D%22256%22 y%3D%22340%22 font-family%3D%22Arial%2Csans-serif%22 font-size%3D%22192%22 font-weight%3D%22700%22 fill%3D%22white%22 text-anchor%3D%22middle%22%3EE%3C%2Ftext%3E%3C%2Fsvg%3E","sizes":"512x512","type":"image/svg+xml"}]}'>
+
+  <!-- PWA: Apple touch icon (SVG inline) -->
+  <link rel="apple-touch-icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="40" fill="%231a56db"/><text x="96" y="128" font-family="Arial,sans-serif" font-size="72" font-weight="700" fill="white" text-anchor="middle">E</text></svg>'>
+  <link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="40" fill="%231a56db"/><text x="96" y="128" font-family="Arial,sans-serif" font-size="72" font-weight="700" fill="white" text-anchor="middle">E</text></svg>'>
+
+  <title>Erta Ale — Daily Trip Log v2.9 (2026-04-25)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+  :root{--blue:#1a56db;--blue-light:#ebf2ff;--blue-mid:#93b4f7;--gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-400:#9ca3af;--gray-600:#4b5563;--gray-800:#1f2937;--green:#059669;--green-light:#ecfdf5;--red:#dc2626;--radius:10px;--radius-sm:6px}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:'DM Sans',sans-serif;background:var(--gray-100);color:var(--gray-800);min-height:100vh;padding-bottom:40px}
+
+  /* ── Header ── */
+  .header{background:var(--blue);color:white;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+  .header h1{font-size:clamp(13px,2vw,16px);font-weight:600;letter-spacing:.02em}
+  .header p{font-size:11px;opacity:.75;margin-top:2px}
+  .header-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+
+  /* ── Form body ── */
+  .form-body{padding:clamp(8px,1.5vw,16px) clamp(8px,2vw,18px);max-width:1400px;margin:0 auto}
+
+  /* ── Info bar ── */
+  .info-bar{background:white;border-radius:var(--radius);border:1px solid var(--gray-200);padding:10px 14px;margin-bottom:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;align-items:end}
+
+  /* ── Field ── */
+  .field{display:flex;flex-direction:column;gap:3px}
+  .field label{font-size:11px;font-weight:500;color:var(--gray-600)}
+  .field-lbl{display:block;font-size:9.5px;font-weight:600;color:var(--gray-400);letter-spacing:.05em;text-transform:uppercase;margin-bottom:2px}
+  .field input,.field select{height:34px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);padding:0 4px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--gray-800);background:white;width:100%;-webkit-appearance:none;appearance:none}
+  .field input:focus,.field select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
+
+  /* ── Trip entries: horizontal scroll wrapper ── */
+  .trips-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .trips-scroll::-webkit-scrollbar{height:4px}
+  .trips-scroll::-webkit-scrollbar-thumb{background:var(--gray-200);border-radius:4px}
+
+  /* ── Column headers & trip rows: fixed px inside scroll container ── */
+  .col-headers{display:grid;grid-template-columns:88px 170px 48px 145px 108px 108px 108px 260px 80px;gap:8px;padding:0 14px 3px;min-width:1040px}
+  .col-headers span{font-size:9.5px;font-weight:600;color:var(--gray-400);letter-spacing:.05em;text-transform:uppercase}
+  .trip-entry{background:white;border-radius:var(--radius);border:1px solid var(--gray-200);margin-bottom:8px;overflow:visible;min-width:1040px}
+  .trip-header{display:flex;align-items:center;padding:7px 12px;background:var(--gray-50);border-bottom:1px solid var(--gray-200);cursor:pointer;user-select:none;-webkit-user-select:none}
+  .trip-badge{background:var(--blue);color:white;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;margin-right:8px;font-family:'DM Mono',monospace}
+  .trip-label{font-size:12px;font-weight:500;flex:1;color:var(--gray-800)}
+  .chevron{font-size:9px;color:var(--gray-400);transition:transform .2s}
+  .trip-header.collapsed .chevron{transform:rotate(-90deg)}
+  .trip-body{padding:10px 12px}
+  .trip-body.hidden{display:none}
+  .trip-row{display:grid;grid-template-columns:88px 170px 48px 145px 108px 108px 108px 260px 80px;gap:8px;align-items:end}
+
+  /* ── Signature ── */
+  .sig-wrap{border:1.5px solid var(--blue-mid);border-radius:var(--radius-sm);background:#fafcff;overflow:hidden;position:relative}
+  .sig-wrap.signed{border-color:var(--green);background:var(--green-light)}
+  .sig-wrap canvas{display:block;width:100%;height:90px;cursor:crosshair;touch-action:none}
+  .sig-placeholder{position:absolute;top:35%;left:50%;transform:translate(-50%,-50%);font-size:10px;color:var(--blue-mid);pointer-events:none;white-space:nowrap}
+  .sig-placeholder.hidden{display:none}
+  .sig-toolbar{display:flex;justify-content:space-between;align-items:center;padding:2px 5px;background:white;border-top:1px solid var(--gray-200)}
+  .sig-status{font-size:9px;color:var(--gray-400)}
+  .sig-status.signed-text{color:var(--green);font-weight:600}
+  .sig-clear{font-size:9px;color:var(--red);background:none;border:none;padding:2px 5px;cursor:pointer;border-radius:4px;font-family:'DM Sans',sans-serif}
+
+  /* ── Sched combo / Will Call ── */
+  .sched-combo{flex-direction:column!important;align-items:stretch;gap:3px}
+  .sched-combo .sched-inputs{display:flex;flex-direction:row;align-items:center;gap:4px}
+  select[id^="ampm-"]{padding:0 2px!important;font-size:11px!important;text-align:center}
+  input[id^="tn-"]{font-size:10px!important;padding:0 3px!important;letter-spacing:0}
+  .call-toggle{height:34px;padding:0 5px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);background:white;color:var(--gray-600);font-size:10px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0}
+  .call-toggle.call-active{background:var(--blue);color:white;border-color:var(--blue)}
+
+  /* ── Trip actions ── */
+  .trip-actions{display:flex;flex-direction:column;gap:5px;align-items:stretch}
+  .save-btn{height:26px;padding:0 6px;background:var(--green);color:white;border:none;border-radius:var(--radius-sm);font-size:11px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;width:100%}
+  .save-btn:active{background:#047857}
+  .edit-btn{height:34px;padding:0 10px;background:var(--blue-light);color:var(--blue);border:1.5px solid var(--blue-mid);border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;width:100%}
+  .edit-btn:active{background:#dbeafe}
+  .remove-x{background:none;border:1px solid var(--gray-200);border-radius:var(--radius-sm);color:var(--red);font-size:11px;height:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;width:100%}
+  .remove-x:active{background:#fee2e2}
+
+  /* ── Saved state ── */
+  .trip-saved-badge{background:var(--green-light);color:var(--green);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;border:1px solid #6ee7b7}
+  .trip-entry.is-saved .trip-header{background:var(--green-light);border-bottom-color:#6ee7b7}
+  .trip-entry.is-saved .trip-badge{background:var(--green)}
+  .saved-summary{padding:8px 14px;font-size:12px;color:var(--gray-600);display:none;gap:12px;flex-wrap:wrap;background:var(--green-light);border-top:1px solid #6ee7b7;align-items:center}
+  .trip-entry.is-saved .saved-summary{display:flex}
+  .trip-entry.is-saved .trip-body{display:none}
+  .sum-item{display:flex;flex-direction:column;gap:1px}
+  .sum-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#059669}
+  .sum-val{font-size:12px;color:var(--gray-800);font-weight:500}
+
+  /* ── Driver section ── */
+  .driver-section{background:white;border-radius:var(--radius);border:1px solid var(--gray-200);padding:12px 14px;margin-bottom:10px;display:grid;grid-template-columns:minmax(200px,260px) minmax(240px,320px);gap:18px;align-items:start;flex-wrap:wrap}
+  @media(max-width:620px){.driver-section{grid-template-columns:1fr}}
+  .driver-sig-canvas{height:90px!important}
+  .sig-hint-badge{font-size:10px;color:var(--blue);background:var(--blue-light);padding:1px 7px;border-radius:20px;margin-left:5px}
+
+  /* ── Add / Import buttons ── */
+  .add-btn{width:100%;padding:10px;border:1.5px dashed var(--gray-200);border-radius:var(--radius);background:white;color:var(--blue);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:6px}
+  .add-btn:active{background:var(--blue-light)}
+  .import-btn{width:100%;padding:10px;border:1.5px dashed #059669;border-radius:var(--radius);background:white;color:#059669;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:6px}
+  .import-btn:active{background:var(--green-light)}
+
+  /* ── Import overlay ── */
+  .import-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:5000;align-items:center;justify-content:center;padding:16px}
+  .import-overlay.open{display:flex}
+  .import-card{background:white;border-radius:16px;width:100%;max-width:520px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+  .import-header{background:#059669;color:white;padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
+  .import-header h2{font-size:15px;font-weight:600}
+  .import-close{background:rgba(255,255,255,.2);border:none;color:white;font-size:18px;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif}
+  .import-body{padding:18px}
+  .import-drop{border:2px dashed #6ee7b7;border-radius:var(--radius);padding:30px;text-align:center;cursor:pointer;background:#f0fdf4;margin-bottom:12px}
+  .import-drop:hover{background:#dcfce7;border-color:#059669}
+  .import-drop p{font-size:13px;color:#059669;font-weight:500;margin-top:8px}
+  .import-drop small{font-size:11px;color:#9ca3af}
+  .import-preview{max-height:200px;overflow-y:auto;margin-bottom:12px;display:none}
+  .import-preview table{width:100%;border-collapse:collapse;font-size:11px}
+  .import-preview th{background:#f3f4f6;padding:4px 8px;text-align:left;font-weight:600;color:#6b7280;border-bottom:1px solid #e5e7eb}
+  .import-preview td{padding:4px 8px;border-bottom:1px solid #f3f4f6;color:#1f2937}
+  .import-confirm-btn{width:100%;height:40px;background:#059669;color:white;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;display:none}
+  .import-confirm-btn:active{background:#047857}
+  .import-msg{font-size:12px;color:#6b7280;text-align:center;margin-top:8px}
+
+  /* ── Section label / notes / buttons ── */
+  .section-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gray-400);margin-bottom:5px;padding:0 2px}
+  .notes-box{background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius);padding:9px 12px;font-size:10.5px;color:#78350f;line-height:1.6;margin-bottom:10px}
+  .notes-box strong{font-weight:600}
+  .btn-row{display:flex;gap:12px;margin-top:4px;justify-content:center;flex-wrap:wrap}
+  .save-all-btn{height:34px;padding:0 12px;background:var(--blue);color:white;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer}
+  .save-all-btn:active{background:#1444b8}
+  .save-all-btn.saved{background:var(--green)}
+  .dl-bottom-btn{height:34px;padding:0 12px;background:#059669;color:white;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer}
+  .dl-bottom-btn:active{background:#047857}
+
+  /* ── Header buttons ── */
+  .history-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-right:6px}
+  .history-btn:active{background:rgba(255,255,255,.25)}
+
+  /* ── History overlay ── */
+  .history-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:5000;align-items:center;justify-content:center;padding:16px}
+  .history-overlay.open{display:flex}
+  .history-card{background:white;border-radius:16px;width:100%;max-width:600px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
+  .history-header{background:var(--blue);color:white;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .history-header h2{font-size:15px;font-weight:600}
+  .history-close{background:rgba(255,255,255,.2);border:none;color:white;font-size:18px;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif}
+  .history-list{overflow-y:auto;flex:1;padding:10px}
+  .history-empty{text-align:center;color:var(--gray-400);font-size:13px;padding:40px 20px}
+  .history-item{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .history-item:hover{background:var(--blue-light);border-color:var(--blue-mid)}
+  .history-date{font-size:14px;font-weight:600;color:var(--gray-800);flex:1}
+  .history-meta{font-size:11px;color:var(--gray-400)}
+  .history-dl-btn{height:30px;padding:0 12px;background:var(--blue);color:white;border:none;border-radius:var(--radius-sm);font-size:11px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer}
+  .history-dl-btn:active{background:#1444b8}
+  .history-del-btn{height:30px;padding:0 10px;background:none;color:var(--red);border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-size:11px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer}
+  .history-del-btn:active{background:#fee2e2}
+
+  /* ── Auth screens ── */
+  .auth-overlay{position:fixed;inset:0;background:var(--blue);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
+  .auth-card{background:white;border-radius:16px;padding:clamp(20px,4vw,36px) clamp(16px,4vw,32px);width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+  .auth-logo{text-align:center;margin-bottom:24px}
+  .auth-logo h1{font-size:20px;font-weight:700;color:var(--blue);margin-bottom:4px}
+  .auth-logo p{font-size:12px;color:var(--gray-400)}
+  .auth-title{font-size:16px;font-weight:600;color:var(--gray-800);margin-bottom:20px;text-align:center}
+  .auth-field{margin-bottom:14px}
+  .auth-field label{display:block;font-size:11px;font-weight:600;color:var(--gray-600);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
+  .auth-field input{width:100%;height:42px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);padding:0 12px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--gray-800);background:white;-webkit-appearance:none}
+  .auth-field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.12)}
+  .auth-btn{width:100%;height:44px;background:var(--blue);color:white;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:6px}
+  .auth-btn:active{background:#1444b8}
+  .auth-btn.secondary{background:white;color:var(--blue);border:1.5px solid var(--blue-mid);margin-top:10px}
+  .pass-wrap{position:relative;display:flex;align-items:center}
+  .pass-wrap input{padding-right:38px!important}
+  .eye-btn{position:absolute;right:8px;background:none;border:none;cursor:pointer;color:var(--gray-400);padding:4px;font-size:16px;line-height:1;display:flex;align-items:center}
+  .eye-btn:hover{color:var(--gray-600)}
+  .auth-switch{text-align:center;font-size:13px;color:var(--gray-400);margin-top:18px}
+  .auth-switch a{color:var(--blue);font-weight:600;cursor:pointer;text-decoration:none}
+  .auth-error{background:#fee2e2;color:var(--red);font-size:12px;font-weight:500;padding:8px 12px;border-radius:var(--radius-sm);margin-bottom:14px;display:none}
+  .auth-error.show{display:block}
+  .auth-success{background:var(--green-light);color:var(--green);font-size:12px;font-weight:500;padding:8px 12px;border-radius:var(--radius-sm);margin-bottom:14px;display:none}
+  .auth-success.show{display:block}
+  .user-badge{display:flex;align-items:center;gap:8px}
+  .user-badge span{font-size:12px;opacity:.85}
+  .signout-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif}
+  .signout-btn:active{background:rgba(255,255,255,.25)}
+  .ap-tab{flex:1;padding:9px 4px;background:none;border:none;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s}
+  .ap-tab:hover{color:var(--blue)}
+  .ap-tab-active{color:var(--blue)!important;border-bottom-color:var(--blue)!important;background:white!important}
+  .user-disabled{opacity:.5}
+  .disabled-badge{font-size:9px;font-weight:700;background:#fee2e2;color:#dc2626;padding:1px 6px;border-radius:10px;margin-left:5px;text-transform:uppercase}
+  .activity-item{padding:7px 10px;border-bottom:1px solid #f3f4f6;font-size:11px;display:flex;gap:10px;align-items:flex-start}
+  .activity-item:last-child{border-bottom:none}
+  .activity-time{color:#9ca3af;white-space:nowrap;min-width:110px}
+  .activity-action{color:#1f2937;flex:1}
+  .activity-user{font-weight:600;color:var(--blue)}
+  .timeout-bar{position:fixed;bottom:0;left:0;right:0;background:#fef3c7;border-top:1px solid #fde68a;padding:5px 16px;font-size:11px;color:#92400e;display:none;z-index:999;align-items:center;justify-content:space-between}
+  .timeout-bar.show{display:flex}
+
+  /* ── Rotate hint (portrait) ── */
+  .rotate-hint{display:none;position:fixed;inset:0;background:var(--blue);color:white;z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:24px}
+  .rotate-hint p{font-size:16px;font-weight:500}
+  .rotate-hint small{font-size:13px;opacity:.75}
+  @media(orientation:portrait)and(max-width:900px){.rotate-hint{display:flex}}
+
+  /* ── Small screen tweaks ── */
+  @media(max-width:480px){
+    .auth-card{border-radius:12px}
+    .btn-row{gap:8px}
+    .save-all-btn,.dl-bottom-btn{font-size:11px;padding:0 8px}
+  }
+  .delete-mode .trip-entry.is-saved{cursor:pointer;border-color:var(--red)!important;outline:2px solid var(--red)}
+  .delete-mode .trip-entry.is-saved:hover{background:#fff5f5}
+  #delete-mode-btn.active{background:var(--red);color:white}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<!-- ── Auth Overlay ── -->
+<div class="auth-overlay" id="auth-overlay">
+  <!-- Sign In -->
+  <div class="auth-card" id="signin-card">
+    <div class="auth-logo">
+      <h1>Erta Ale</h1>
+      <p>Daily Trip Log</p>
+    </div>
+    <div class="auth-title">Sign In</div>
+    <div class="auth-error" id="signin-error"></div>
+    <div class="auth-field"><label>Username</label><input type="text" id="signin-user" placeholder="Enter username" autocomplete="username"></div>
+    <div class="auth-field"><label>Password</label><div class="pass-wrap"><input type="password" id="signin-pass" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doSignIn()"><button type="button" class="eye-btn" onclick="togglePassVis('signin-pass',this)" tabindex="-1">&#128065;</button></div></div>
+    <button class="auth-btn" onclick="doSignIn()">Sign In</button>
+  <div id="reset-panel" style="display:none;margin-top:14px;padding:14px;background:#fef3c7;border:1px solid #fde68a;border-radius:10px">
+    <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:6px">&#9888; Admin: Reset driver password</div>
+    <div style="font-size:11px;color:#78350f;margin-bottom:10px">Type the driver username above, enter your admin password, then set a new password.</div>
+    <input type="password" id="reset-admin-pass" placeholder="Your admin password"
+      style="display:block;width:100%;height:38px;border:1.5px solid #fde68a;border-radius:6px;padding:0 10px;font-size:13px;font-family:inherit;margin-bottom:7px;box-sizing:border-box">
+    <input type="password" id="reset-new-pass" placeholder="New password for driver"
+      style="display:block;width:100%;height:38px;border:1.5px solid #fde68a;border-radius:6px;padding:0 10px;font-size:13px;font-family:inherit;margin-bottom:9px;box-sizing:border-box">
+    <button onclick="doAdminReset()"
+      style="display:block;width:100%;height:38px;background:#d97706;color:white;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+      &#128273; Reset Password
+    </button>
+    <div id="reset-msg" style="margin-top:8px;font-size:12px;font-weight:500;min-height:18px"></div>
+  </div>
+  </div>
+  <!-- Sign Up -->
+  <!-- Admin Panel Modal -->
+  <div class="auth-card" id="signup-card" style="display:none;max-width:480px;padding:0;overflow:hidden">
+    <div style="background:var(--blue);color:white;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;">
+      <div><strong style="font-size:15px;">&#128737; Admin Panel</strong><div style="font-size:11px;opacity:.75;margin-top:2px;">User Management</div></div>
+      <button onclick="closeAdminPanel()" style="background:rgba(255,255,255,.2);border:none;color:white;width:28px;height:28px;border-radius:50%;font-size:16px;cursor:pointer;font-family:inherit;">&#x2715;</button>
+    </div>
+    <!-- Tabs -->
+    <div style="display:flex;border-bottom:2px solid #e5e7eb;background:#f9fafb;">
+      <button class="ap-tab ap-tab-active" id="tab-create" onclick="apTab('create')">&#43; Create</button>
+      <button class="ap-tab" id="tab-users" onclick="apTab('users')">&#128100; Users</button>
+      <button class="ap-tab" id="tab-admin" onclick="apTab('admin')">&#128274; Admin</button>
+      <button class="ap-tab" id="tab-log" onclick="apTab('log')">&#128203; Activity</button>
+    </div>
+    <div style="padding:18px;max-height:420px;overflow-y:auto;">
+
+      <!-- Tab: Create User -->
+      <div id="ap-create">
+        <div class="auth-error" id="signup-error"></div>
+        <div class="auth-success" id="signup-success"></div>
+        <div class="auth-field"><label>Full Name</label><input type="text" id="signup-name" placeholder="User's full name"></div>
+        <div class="auth-field"><label>Username</label><input type="text" id="signup-user" placeholder="Choose a username (min 3 chars)"></div>
+        <div class="auth-field"><label>Password</label><div class="pass-wrap"><input type="password" id="signup-pass" placeholder="Min 6 characters"><button type="button" class="eye-btn" onclick="togglePassVis('signup-pass',this)" tabindex="-1">&#128065;</button></div></div>
+        <div class="auth-field"><label>Confirm Password</label><div class="pass-wrap"><input type="password" id="signup-pass2" placeholder="Repeat password"><button type="button" class="eye-btn" onclick="togglePassVis('signup-pass2',this)" tabindex="-1">&#128065;</button></div></div>
+        <button class="auth-btn" onclick="doSignUp()">&#43; Create Account</button>
+        <div style="margin-top:14px;padding:10px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;font-size:11px;color:#78350f;line-height:1.6;">
+          &#9888; <strong>After creating accounts:</strong> Close this panel and click <strong>&#x2B07; Download Trip Log</strong>. Share that file with your drivers — their login will work on any device.
+        </div>
+      </div>
+
+      <!-- Tab: Manage Users -->
+      <div id="ap-users" style="display:none;">
+        <div id="users-list-section"></div>
+      </div>
+
+      <!-- Tab: Activity Log -->
+      <div id="ap-log" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <span style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;">Recent Activity</span>
+          <button onclick="clearActivityLog()" style="font-size:10px;color:#dc2626;background:none;border:1px solid #fca5a5;border-radius:4px;padding:2px 8px;cursor:pointer;font-family:inherit;">Clear Log</button>
+        </div>
+        <div id="activity-log-list" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;max-height:300px;overflow-y:auto;"></div>
+      </div>
+
+      <!-- Tab: Admin Credentials -->
+      <div id="ap-admin" style="display:none;">
+        <div class="auth-error" id="admin-cred-error"></div>
+        <div class="auth-success" id="admin-cred-success"></div>
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:8px 12px;font-size:11px;color:#78350f;margin-bottom:14px;">
+          &#9888; Changing admin credentials will take effect immediately. Make sure to remember the new login.
+        </div>
+        <div class="auth-field"><label>New Admin Username</label><input type="text" id="admin-new-user" placeholder="New username (min 3 chars)"></div>
+        <div class="auth-field"><label>New Password</label><div class="pass-wrap"><input type="password" id="admin-new-pass" placeholder="Min 6 characters"><button type="button" class="eye-btn" onclick="togglePassVis('admin-new-pass',this)" tabindex="-1">&#128065;</button></div></div>
+        <div class="auth-field"><label>Confirm New Password</label><div class="pass-wrap"><input type="password" id="admin-new-pass2" placeholder="Repeat new password"><button type="button" class="eye-btn" onclick="togglePassVis('admin-new-pass2',this)" tabindex="-1">&#128065;</button></div></div>
+        <div class="auth-field"><label>Current Password (to confirm)</label><div class="pass-wrap"><input type="password" id="admin-cur-pass" placeholder="Your current password"><button type="button" class="eye-btn" onclick="togglePassVis('admin-cur-pass',this)" tabindex="-1">&#128065;</button></div></div>
+        <button class="auth-btn" onclick="changeAdminCredentials()">&#128274; Update Admin Credentials</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Session timeout warning bar -->
+<div class="timeout-bar" id="timeout-bar">
+  <span>&#9201; Your session will expire in <strong id="timeout-countdown">5:00</strong> due to inactivity.</span>
+  <button onclick="resetSessionTimer()" style="background:var(--blue);color:white;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">Stay Logged In</button>
+</div>
+
+<div class="rotate-hint">
+  <svg width="52" height="52" viewBox="0 0 52 52" fill="none"><rect x="8" y="4" width="36" height="44" rx="5" stroke="white" stroke-width="2.5"/><path d="M26 40h.01" stroke="white" stroke-width="3" stroke-linecap="round"/><path d="M36 26l5 5-5 5M16 26l-5 5 5 5" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <p>Rotate to landscape mode</p><small>This form works best in landscape orientation</small>
+</div>
+<div class="header">
+  <div><h1>Erta Ale — Daily Trip Log</h1><span style="font-size:10px;opacity:.6;margin-left:8px">v2.9</span><p>Landscape view — sign with finger or Apple Pencil</p></div>
+  <div class="user-badge">
+    <span id="header-username"></span>
+    <button id="install-pwa-btn" onclick="installPWA()" style="display:none;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-right:6px">&#x2B07; Install App</button>
+      <button class="history-btn" id="manage-users-btn" onclick="openAdminPanel()" style="display:none">&#128737; Users</button>
+    <button class="history-btn" onclick="openHistory()">&#128196; History</button>
+    <button class="signout-btn" onclick="doSignOut()">Sign Out</button>
+  </div>
+</div>
+
+<!-- History overlay -->
+<div class="history-overlay" id="history-overlay">
+  <div class="history-card">
+    <div class="history-header">
+      <h2>&#128196; Daily Log History</h2>
+      <button class="history-close" onclick="closeHistory()">&#x2715;</button>
+    </div>
+    <div class="history-list" id="history-list"></div>
+  </div>
+</div>
+<div class="form-body" id="main-form">
+  <div class="info-bar">
+    <div class="field"><label>Transportation Provider</label><input type="text" id="provider" placeholder="Provider name" oninput="saveSticky()"></div>
+    <div class="field"><label>Date of Service</label><input type="date" id="date" onchange="onDateChange(this.value)"></div>
+    <div class="field"><label>Driver's License Number</label><input type="text" id="license" placeholder="License #" oninput="saveSticky()"></div>
+    <div class="field"><label>VIN (Last 5 digits)</label><input type="text" id="vin" placeholder="Last 5" maxlength="5" oninput="saveSticky()"></div>
+  </div>
+  <div class="section-label">Trip Entries</div>
+  <div class="trips-scroll"><div class="col-headers">
+    <span>Trip #</span><span>Member Name</span><span>AM/PM</span>
+    <span>Sched. Pickup</span><span>Pickup Arrival</span><span>Pickup Dep.</span>
+    <span>Dest. Arrival</span><span>Member Signature</span><span>Actions</span>
+  </div>
+  <div id="trips-list"></div>
+  </div><!-- /trips-scroll -->
+  <button class="add-btn" onclick="addTrip()">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="#1a56db"/><path d="M8 4.5v7M4.5 8h7" stroke="#1a56db" stroke-width="1.5" stroke-linecap="round"/></svg>
+    Add Trip Entry
+  </button>
+  <button class="import-btn" onclick="openImport()">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="2" stroke="#059669" stroke-width="1.5"/><path d="M8 4v6M5 8l3 3 3-3" stroke="#059669" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Import from Excel / CSV
+  </button>
+
+  <!-- Import overlay -->
+  <div class="import-overlay" id="import-overlay">
+    <div class="import-card">
+      <div class="import-header">
+        <h2>&#128202; Import Trip Schedule</h2>
+        <button class="import-close" onclick="closeImport()">&#x2715;</button>
+      </div>
+      <div class="import-body">
+        <div class="import-drop" id="import-drop" onclick="document.getElementById('import-file-input').click()" ondragover="event.preventDefault()" ondrop="handleImportDrop(event)">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M12 2v12M8 10l4-4 4 4" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 17v2a2 2 0 002 2h14a2 2 0 002-2v-2" stroke="#059669" stroke-width="2" stroke-linecap="round"/></svg>
+          <p>Click or drag &amp; drop your file here</p>
+          <small>Supports .xlsx, .xls, .csv files</small>
+          <input type="file" id="import-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleImportFile(this)">
+        </div>
+        <div class="import-preview" id="import-preview">
+          <table id="import-table"><thead><tr><th>#</th><th>Trip #</th><th>Member Name</th><th>AM/PM</th><th>Sched. Pickup</th></tr></thead><tbody id="import-tbody"></tbody></table>
+        </div>
+        <div class="import-msg" id="import-msg"></div>
+        <button class="import-confirm-btn" id="import-confirm-btn" onclick="confirmImport()">&#10003; Import Trips</button>
+      </div>
+    </div>
+  </div>
+  <div class="section-label">Driver Information</div>
+  <div class="driver-section">
+    <div class="field"><label>Driver's Printed Name</label><input type="text" id="driver-name" placeholder="Full name" oninput="saveSticky()"></div>
+    <div>
+      <div style="font-size:11px;font-weight:500;color:var(--gray-600);margin-bottom:5px;">Driver's Signature <span class="sig-hint-badge">finger or Apple Pencil</span></div>
+      <div class="sig-wrap" id="driver-sig-wrap">
+        <canvas id="driver-sig-canvas" class="driver-sig-canvas"></canvas>
+        <div class="sig-placeholder" id="driver-sig-placeholder">Sign here</div>
+        <div class="sig-toolbar">
+          <span class="sig-status" id="driver-sig-status">Not signed</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <button class="sig-clear" onclick="clearSig('driver-sig-canvas','driver-sig-wrap','driver-sig-placeholder','driver-sig-status')">Clear</button>
+            <button id="save-driver-sig-btn" onclick="saveDriverSig()" style="display:none;height:22px;padding:0 8px;background:var(--green);color:white;border:none;border-radius:4px;font-size:10px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer">&#10003; Save Sig</button>
+          </div>
+        </div>
+      </div>
+      <!-- Saved signature display -->
+      <div id="driver-sig-saved" style="display:none;margin-top:6px;border:1.5px solid var(--green);border-radius:var(--radius-sm);overflow:hidden;background:var(--green-light)">
+        <img id="driver-sig-img" style="display:block;width:100%;max-height:90px;object-fit:contain">
+        <div style="display:flex;justify-content:space-between;padding:2px 6px;background:white;border-top:1px solid #6ee7b7">
+          <span style="font-size:9px;color:var(--green);font-weight:600">&#10003; Signed</span>
+          <button onclick="editDriverSig()" style="font-size:9px;color:var(--blue);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif">Edit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="notes-box"><strong>Notes:</strong> A signature is required for each leg of the transport. If the Member is unable to sign the Trip Log, please have the Facility Staff or Aid sign on behalf of the Member. AM/PM is in Pickup. No shows will be indicated with NS in the Drop-Off Time. I certify that all information contained herein is true and accurate, and understand that this statement is made subject to the applicable penalties under federal and state law for making false declarations.</div>
+  <div class="btn-row">
+    <button class="save-all-btn" id="save-all-btn" onclick="toggleSaveAllTrips()">&#10003; Save All Trips</button>
+    <button onclick="clearAllTrips()" style="height:34px;padding:0 12px;background:white;color:var(--red);border:1.5px solid var(--red);border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer">&#128465; Clear All</button>
+    <button id="delete-mode-btn" onclick="toggleDeleteMode()" style="height:34px;padding:0 12px;background:white;color:var(--red);border:1.5px solid var(--red);border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer">&#x1F5D1; Delete Trip</button>
+    <button class="save-all-btn" style="background:var(--blue)" onclick="saveDayToHistory()">&#128190; Save Day to History</button>
+    <button class="dl-bottom-btn" onclick="downloadLog()">&#x2B07; Download Trip Log</button>
+  </div>
+</div>
+
+<script>
+let tripCount = 0;
+
+/* injected restore data (used in downloaded copies) */
+var _INIT_TRIPS = null;
+var _INIT_DRIVER_SIG = null;
+var _INIT_FIELDS = null;
+var _INIT_USERS = null;
+var _IS_DOWNLOADED = false; /* set to true by downloadLog */
+
+function val(id){const el=document.getElementById(id);return el?el.value:'';}
+
+
+/* ── Signature pad ── */
+function saveDriverSig(){
+  var img = canvasToImg('driver-sig-canvas');
+  if(!img){ alert('Please sign first.'); return; }
+  // Show the saved image panel, hide the canvas
+  var savedDiv = document.getElementById('driver-sig-saved');
+  var savedImg = document.getElementById('driver-sig-img');
+  var wrap     = document.getElementById('driver-sig-wrap');
+  if(savedDiv && savedImg){
+    savedImg.src = img.dataUrl || img;
+    savedDiv.style.display = 'block';
+    wrap.style.display = 'none';
+  }
+  var sb=document.getElementById('save-driver-sig-btn');
+  if(sb) sb.style.display='none';
+  saveFormState();
+}
+function editDriverSig(){
+  var savedDiv = document.getElementById('driver-sig-saved');
+  var wrap     = document.getElementById('driver-sig-wrap');
+  if(savedDiv) savedDiv.style.display = 'none';
+  if(wrap)     wrap.style.display = '';
+}
+function initSigPad(canvasId,wrapId,phId,statId){
+  const canvas=document.getElementById(canvasId);if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  const w=canvas.parentElement.offsetWidth||200,h=canvas.offsetHeight||90;
+  canvas.width=w*dpr;canvas.height=h*dpr;
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
+  ctx.strokeStyle='#1a1a2e';ctx.lineWidth=2;ctx.lineCap='round';ctx.lineJoin='round';
+  let drawing=false,lx=0,ly=0;
+  function pos(e){const r=canvas.getBoundingClientRect();const s=e.touches?e.touches[0]:e;return{x:s.clientX-r.left,y:s.clientY-r.top};}
+  function start(e){e.preventDefault();drawing=true;const p=pos(e);lx=p.x;ly=p.y;ctx.beginPath();ctx.arc(lx,ly,1,0,Math.PI*2);ctx.fillStyle='#1a1a2e';ctx.fill();}
+  function move(e){
+    if(!drawing)return;e.preventDefault();const p=pos(e);
+    ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(p.x,p.y);ctx.stroke();lx=p.x;ly=p.y;
+    document.getElementById(phId)?.classList.add('hidden');
+    const stat=document.getElementById(statId);if(stat){stat.textContent='Signed';stat.classList.add('signed-text');}
+    if(canvasId==='driver-sig-canvas'){var sb=document.getElementById('save-driver-sig-btn');if(sb) sb.style.display='';}
+    document.getElementById(wrapId)?.classList.add('signed');
+  }
+  function end(){drawing=false;}
+  canvas.addEventListener('mousedown',start);canvas.addEventListener('mousemove',move);
+  canvas.addEventListener('mouseup',end);canvas.addEventListener('mouseleave',end);
+  canvas.addEventListener('touchstart',start,{passive:false});canvas.addEventListener('touchmove',move,{passive:false});canvas.addEventListener('touchend',end);
+}
+
+function clearSig(canvasId,wrapId,phId,statId){
+  const canvas=document.getElementById(canvasId);if(!canvas)return;
+  canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+  // Remove overlay img if present
+  const wrap=document.getElementById(wrapId);
+  if(wrap){var ov=wrap.querySelector('.sig-restore-img');if(ov)ov.remove();}
+  document.getElementById(phId)?.classList.remove('hidden');
+  const stat=document.getElementById(statId);if(stat){stat.textContent='Not signed';stat.classList.remove('signed-text');}
+  document.getElementById(wrapId)?.classList.remove('signed');
+  if(canvasId==='driver-sig-canvas'){var sb=document.getElementById('save-driver-sig-btn');if(sb) sb.style.display='none';}
+}
+
+function canvasToImg(canvasId){
+  const canvas=document.getElementById(canvasId);if(!canvas)return'';
+  // Check for restored image overlay first
+  const wrap=canvas.parentElement;
+  const overlay=wrap?wrap.querySelector('.sig-restore-img'):null;
+  if(overlay&&overlay.src) return overlay.src;
+  const data=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
+  if(!Array.from(data).some((v,i)=>i%4===3&&v>0))return'';
+  return canvas.toDataURL('image/png');
+}
+
+function restoreSig(canvasId,wrapId,phId,statId,dataUrl,callback){
+  if(!dataUrl){if(callback)callback();return;}
+  const wrap=document.getElementById(wrapId);if(!wrap){if(callback)callback();return;}
+  // Remove any existing overlay
+  var old=wrap.querySelector('.sig-restore-img');if(old)old.remove();
+  // Create an img overlay that sits on top of the canvas
+  var img=document.createElement('img');
+  img.className='sig-restore-img';
+  img.src=dataUrl;
+  img.style.cssText='position:absolute;top:0;left:0;width:100%;height:90px;object-fit:contain;pointer-events:none;background:transparent;';
+  // Insert before the toolbar
+  var toolbar=wrap.querySelector('.sig-toolbar');
+  wrap.insertBefore(img,toolbar);
+  document.getElementById(phId)?.classList.add('hidden');
+  const stat=document.getElementById(statId);if(stat){stat.textContent='Signed';stat.classList.add('signed-text');}
+  wrap.classList.add('signed');
+  if(callback)callback();
+}
+
+/* ── Trip CRUD ── */
+function renumberTrips(){
+  var entries=document.querySelectorAll('.trip-entry');
+  entries.forEach(function(entry,i){
+    var badge=entry.querySelector('.trip-badge');
+    if(badge) badge.textContent='#'+(i+1);
+  });
+}
+
+function addTrip(data){
+  tripCount++;
+  const id=(data&&data.id!=null&&!isNaN(parseInt(data.id)))?parseInt(data.id):tripCount;
+  if(data&&parseInt(data.id)>=tripCount)tripCount=parseInt(data.id)+1;
+  const div=document.createElement('div');
+  div.className='trip-entry';div.id='trip-'+id;
+  div.innerHTML=
+    '<div class="trip-header" id="trip-hdr-'+id+'" onclick="toggleTrip('+id+')">'
+    +'<span class="trip-badge">#1</span>'
+    +'<span class="trip-label" id="trip-lbl-'+id+'">New Entry</span>'
+    +'<span class="chevron">&#9660;</span></div>'
+    +'<div class="trip-body" id="trip-body-'+id+'">'
+    +'<div class="trip-row">'
+    +'<div class="field"><label class="field-lbl">Trip #</label><input type="text" id="tn-'+id+'" placeholder="Trip #" oninput="updateLabel('+id+');saveFormState()"></div>'
+    +'<div class="field"><label class="field-lbl">Member Name</label><input type="text" id="mn-'+id+'" placeholder="Full name" oninput="updateLabel('+id+');saveFormState()"></div>'
+    
+    +'<div class="field"><label class="field-lbl">AM/PM</label><select id="ampm-'+id+'" onchange="saveFormState()"><option value="">--</option><option>AM</option><option>PM</option></select></div>'+'<div class="field"><label class="field-lbl">Sched. Pickup</label>'+'<div style="display:flex;gap:3px;align-items:center">'+'<input type="time" id="sched-'+id+'" step="60" step="60" style="flex:1;height:34px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);padding:0 6px;font-size:12px;font-family:inherit;background:white;color:var(--gray-800);min-width:0">'+'<button type="button" id="call-btn-'+id+'" onclick="toggleCall('+id+')" class="call-toggle">WC</button>'+'</div></div>'
+    +'<div class="field"><label class="field-lbl">Pickup Arrival</label><input type="time" id="arr-'+id+'" step="60" step="60" onchange="saveFormState()"></div>'
+    +'<div class="field"><label class="field-lbl">Pickup Dep.</label><input type="time" id="dep-'+id+'" step="60" step="60" onchange="saveFormState()"></div>'
+    +'<div class="field"><label class="field-lbl">Dest. Arrival</label><input type="time" id="dest-'+id+'" step="60" step="60" onchange="saveFormState()"></div>'
+    +'<div class="sig-wrap" id="sig-wrap-'+id+'">'
+    +'<canvas id="sig-'+id+'"></canvas>'
+    +'<div class="sig-placeholder" id="sig-ph-'+id+'">Sign here</div>'
+    +'<div class="sig-toolbar"><span class="sig-status" id="sig-stat-'+id+'">Not signed</span>'
+    +'<button class="sig-clear" onclick="clearSig(\'sig-'+id+'\',\'sig-wrap-'+id+'\',\'sig-ph-'+id+'\',\'sig-stat-'+id+'\')">Clear</button></div></div>'
+    +'<div class="trip-actions">'
+    +'<button class="save-btn" onclick="toggleSaveTrip('+id+')">&#10003; Save</button>'
+    +'<button class="remove-x" onclick="removeTrip('+id+')">&#x2715; Remove</button>'
+    +'</div></div></div>'
+    +'<div class="saved-summary" id="saved-sum-'+id+'"></div>';
+  document.getElementById('trips-list').appendChild(div);
+  renumberTrips();
+  if(data){
+    if(data.tn!=null)   document.getElementById('tn-'+id).value=data.tn;
+    if(data.mn!=null)   document.getElementById('mn-'+id).value=data.mn;
+    if(data.ampm!=null) document.getElementById('ampm-'+id).value=data.ampm;
+    if(data.sched!=null)document.getElementById('sched-'+id).value=data.sched;
+    if(data.arr!=null)  document.getElementById('arr-'+id).value=data.arr;
+    if(data.dep!=null)  document.getElementById('dep-'+id).value=data.dep;
+    if(data.dest!=null) document.getElementById('dest-'+id).value=data.dest;
+    updateLabel(id);
+  }
+  requestAnimationFrame(function(){
+    initSigPad('sig-'+id,'sig-wrap-'+id,'sig-ph-'+id,'sig-stat-'+id);
+    if(data&&data.callActive){
+      var b=document.getElementById('call-btn-'+id);var inp=document.getElementById('sched-'+id);
+      if(b) b.classList.add('call-active');;
+      if(data.wct!=null){ var wctInp=document.getElementById('wct-'+id); if(wctInp) wctInp.value=data.wct; }
+    }
+    if(data&&data.sigImg){
+      restoreSig('sig-'+id,'sig-wrap-'+id,'sig-ph-'+id,'sig-stat-'+id,data.sigImg,function(){
+        if(data.saved) saveTrip(id, data);
+      });
+    } else {
+      if(data&&data.saved) saveTrip(id, data);
+    }
+  });
+  if(!data) div.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function clearAllTrips(){
+  if(!confirm('Clear all trip entries? This cannot be undone.')) return;
+  document.getElementById('trips-list').innerHTML='';
+  tripCount=0;
+  addTrip(); // add one blank entry
+  saveFormState();
+}
+var _deleteMode=false;
+function toggleDeleteMode(){
+  _deleteMode=!_deleteMode;
+  var btn=document.getElementById('delete-mode-btn');
+  var body=document.querySelector('.form-body');
+  if(_deleteMode){
+    btn.classList.add('active');
+    btn.textContent='\u274c Cancel Delete';
+    if(body) body.classList.add('delete-mode');
+    // Show Delete button on each saved trip
+    document.querySelectorAll('.trip-entry.is-saved').forEach(function(entry){
+      var id=entry.id.replace('trip-','');
+      var db=document.getElementById('del-btn-'+id);
+      if(db) db.style.display='';
+    });
+    showToast('Tap Delete on any trip to remove it');
+  } else {
+    btn.classList.remove('active');
+    btn.innerHTML='&#x1F5D1; Delete Trip';
+    if(body) body.classList.remove('delete-mode');
+    // Hide all Delete buttons
+    document.querySelectorAll('[id^="del-btn-"]').forEach(function(db){
+      db.style.display='none';
+    });
+  }
+}
+function deleteModeClickHandler(e){
+  if(!_deleteMode) return;
+  var entry=this;
+  var id=entry.id.replace('trip-','');
+  var name=entry.dataset.mn||'this entry';
+  if(confirm('Delete trip for '+name+'?\nThis cannot be undone.')){
+    removeTrip(id);
+    // If no more trips, exit delete mode
+    if(document.querySelectorAll('.trip-entry.is-saved').length===0) toggleDeleteMode();
+  }
+}
+function confirmDelete(id){
+  var entry=document.getElementById('trip-'+id);
+  var name=(entry&&entry.dataset.mn)||'this entry';
+  if(!confirm('Delete trip for '+name+'?\nThis cannot be undone.')) return;
+  removeTrip(id);
+}
+function removeTrip(id){
+  document.getElementById('trip-'+id)?.remove();
+  // Reset tripCount if no trips remain so next trip starts at #1
+  if(document.querySelectorAll('.trip-entry').length===0){ tripCount=0; }
+  renumberTrips();
+  saveFormState();
+}
+
+function updateLabel(id){
+  const tn=document.getElementById('tn-'+id).value;
+  const mn=document.getElementById('mn-'+id).value;
+  document.getElementById('trip-lbl-'+id).textContent=mn?mn+(tn?' — '+tn:''):(tn?'Trip '+tn:'New Entry');
+}
+
+function toggleTrip(id){
+  if(document.getElementById('trip-'+id).classList.contains('is-saved'))return;
+  const body=document.getElementById('trip-body-'+id);
+  const hdr=document.getElementById('trip-hdr-'+id);
+  hdr.classList.toggle('collapsed',body.classList.toggle('hidden'));
+}
+
+function to12hr(t){
+  if(!t) return '';
+  var parts=t.split(':');
+  if(parts.length<2) return t;
+  var h=parseInt(parts[0]),m=parts[1];
+  var period=h>=12?'PM':'AM';
+  h=h%12||12;
+  return h+':'+m+' '+period;
+}
+function showToast(msg){
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1f2937;color:white;padding:10px 18px;border-radius:20px;font-size:12px;font-weight:500;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  requestAnimationFrame(function(){t.style.opacity='1';});
+  setTimeout(function(){t.style.opacity='0';setTimeout(function(){t.remove();},300);},3000);
+}
+function toggleCall(id){
+  var btn=document.getElementById('call-btn-'+id);
+  btn.classList.toggle('call-active');
+  saveFormState();
+}
+
+/* ── Save / Edit ── */
+function saveTrip(id, _restoreOnly){
+  const entry=document.getElementById('trip-'+id);
+
+  function liveVal(inputId){
+    var el=document.getElementById(inputId);
+    return el ? el.value : '';
+  }
+
+  // During restore: use _restoreOnly values directly (inputs may not be settled in rAF)
+  // During user save: always read live DOM
+  var tn, mn, ampm, sched, arr, dep, dest, callActive, wct;
+  if(_restoreOnly){
+    tn   = _restoreOnly.tn   !== undefined ? _restoreOnly.tn   : liveVal('tn-'+id);
+    mn   = _restoreOnly.mn   !== undefined ? _restoreOnly.mn   : liveVal('mn-'+id);
+    ampm = _restoreOnly.ampm !== undefined ? _restoreOnly.ampm : liveVal('ampm-'+id);
+    sched= _restoreOnly.sched!== undefined ? _restoreOnly.sched: liveVal('sched-'+id);
+    arr  = _restoreOnly.arr  !== undefined ? _restoreOnly.arr  : liveVal('arr-'+id);
+    dep  = _restoreOnly.dep  !== undefined ? _restoreOnly.dep  : liveVal('dep-'+id);
+    dest = _restoreOnly.dest !== undefined ? _restoreOnly.dest : liveVal('dest-'+id);
+    callActive = !!_restoreOnly.callActive;
+    wct  = _restoreOnly.wct  !== undefined ? _restoreOnly.wct  : liveVal('wct-'+id);
+  } else {
+    tn   = liveVal('tn-'+id);
+    mn   = liveVal('mn-'+id);
+    ampm = liveVal('ampm-'+id);
+    sched= liveVal('sched-'+id);
+    arr  = liveVal('arr-'+id);
+    dep  = liveVal('dep-'+id);
+    dest = liveVal('dest-'+id);
+    callActive = document.getElementById('call-btn-'+id)?.classList.contains('call-active')||false;
+    wct  = liveVal('wct-'+id);
+  }
+
+  // Sig: overlay/canvas first, then _restoreOnly
+  var sigImg='';
+  var wrap=document.getElementById('sig-wrap-'+id);
+  var overlay=wrap?wrap.querySelector('.sig-restore-img'):null;
+  if(overlay&&overlay.src&&overlay.src.length>100){
+    sigImg=overlay.src;
+  } else {
+    sigImg=canvasToImg('sig-'+id);
+  }
+  if(!sigImg&&_restoreOnly&&_restoreOnly.sigImg) sigImg=_restoreOnly.sigImg;
+
+  const schedDisplay = callActive ? 'Will Call' : (sched?to12hr(sched):'—');
+
+  // Store all values as data attributes for reliable future reads
+  entry.dataset.tn=tn; entry.dataset.mn=mn; entry.dataset.ampm=ampm;
+  entry.dataset.sched=sched; entry.dataset.arr=arr;
+  entry.dataset.dep=dep; entry.dataset.dest=dest;
+  entry.dataset.callActive=callActive?'1':'';
+  entry.dataset.wct=wct||'';
+  entry.dataset.sigImg=sigImg||'';
+  document.getElementById('saved-sum-'+id).innerHTML=
+    '<div class="sum-item"><span class="sum-label">Trip #</span><span class="sum-val">'+(tn||'—')+'</span></div>'
+    +'<div class="sum-item"><span class="sum-label">Member</span><span class="sum-val">'+(mn||'—')+'</span></div>'
+    +''
+    +'<div class="sum-item"><span class="sum-label">Sched. Pickup</span><span class="sum-val">'+schedDisplay+'</span></div>'
+    +'<div class="sum-item"><span class="sum-label">Pickup Arrival</span><span class="sum-val">'+(arr?to12hr(arr):'—')+'</span></div>'
+    +'<div class="sum-item"><span class="sum-label">Pickup Dep.</span><span class="sum-val">'+(dep?to12hr(dep):'—')+'</span></div>'
+    +'<div class="sum-item"><span class="sum-label">Dest. Arrival</span><span class="sum-val">'+(dest?to12hr(dest):'—')+'</span></div>'
+    +'<div class="sum-item"><span class="sum-label">Signature</span>'+(sigImg?'<img src="'+sigImg+'" style="max-height:40px;max-width:140px;display:block;border:1px solid #6ee7b7;border-radius:4px;background:white;">':'<span class="sum-val">⚠️ Not signed</span>')+'</div>'
+    +'<div style="margin-left:auto;display:flex;gap:6px">'+'<button class="edit-btn" onclick="editTrip('+id+')" style="width:auto;padding:0 14px">&#9998; Edit</button>'+'<button id="del-btn-'+id+'" onclick="confirmDelete('+id+')" style="display:none;height:34px;padding:0 12px;background:var(--red);color:white;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer">&#x1F5D1; Delete</button>'+'</div>';
+  const lbl=document.getElementById('trip-lbl-'+id);
+  if(!lbl.querySelector('.trip-saved-badge')) lbl.insertAdjacentHTML('beforeend','<span class="trip-saved-badge">Saved</span>');
+  entry.classList.add('is-saved');
+  saveFormState();
+}
+
+function editTrip(id){
+  const entry=document.getElementById('trip-'+id);
+  var existingSig=entry.dataset.sigImg||'';
+  entry.classList.remove('is-saved');
+  const badge=document.getElementById('trip-lbl-'+id).querySelector('.trip-saved-badge');
+  if(badge)badge.remove();
+  var d=entry.dataset;
+  var setv=function(eid,val){var el=document.getElementById(eid);if(el&&val!=null)el.value=val;};
+  setv('tn-'+id,d.tn); setv('mn-'+id,d.mn); setv('ampm-'+id,d.ampm);
+  setv('sched-'+id,d.sched); setv('arr-'+id,d.arr);
+  setv('dep-'+id,d.dep); setv('dest-'+id,d.dest);
+  if(d.callActive==='1'){var btn=document.getElementById('call-btn-'+id);if(btn)btn.classList.add('call-active');}
+  updateLabel(id);
+  requestAnimationFrame(function(){
+    initSigPad('sig-'+id,'sig-wrap-'+id,'sig-ph-'+id,'sig-stat-'+id);
+    if(existingSig){restoreSig('sig-'+id,'sig-wrap-'+id,'sig-ph-'+id,'sig-stat-'+id,existingSig,null);}
+  });
+}
+
+/* ── Collect trip data ── */
+function collectTrips(){
+  const entries=document.querySelectorAll('.trip-entry'),trips=[];
+  entries.forEach(function(entry){
+    const id=entry.id.replace('trip-','');
+    const isSaved=entry.classList.contains('is-saved');
+
+    // Always read from dataset for saved trips (inputs hidden by CSS)
+    // Always read from live inputs for unsaved/editing trips
+    function rd(key, inputId){
+      if(isSaved){
+        return entry.dataset[key]!==undefined ? entry.dataset[key] : '';
+      }
+      var el=document.getElementById(inputId);
+      return el ? el.value : '';
+    }
+
+    const callActive = isSaved
+      ? (entry.dataset.callActive==='1')
+      : (document.getElementById('call-btn-'+id)?.classList.contains('call-active')||false);
+
+    // Sig: dataset for saved, overlay/canvas for unsaved
+    var sigImg='';
+    if(isSaved){
+      sigImg=entry.dataset.sigImg||'';
+    } else {
+      var wrap=document.getElementById('sig-wrap-'+id);
+      var overlay=wrap?wrap.querySelector('.sig-restore-img'):null;
+      sigImg=(overlay&&overlay.src&&overlay.src.length>100)?overlay.src:canvasToImg('sig-'+id);
+    }
+
+    var wctVal = isSaved
+      ? (entry.dataset.wct||'')
+      : (document.getElementById('wct-'+id)?document.getElementById('wct-'+id).value:'');
+
+    trips.push({
+      id:id,
+      tn:   rd('tn',   'tn-'+id),
+      mn:   rd('mn',   'mn-'+id),
+      ampm: rd('ampm', 'ampm-'+id),
+      sched:rd('sched','sched-'+id),
+      callActive:callActive,
+      wct:  wctVal,
+      arr:  rd('arr',  'arr-'+id),
+      dep:  rd('dep',  'dep-'+id),
+      dest: rd('dest', 'dest-'+id),
+      sigImg:sigImg,
+      saved:isSaved
+    });
+  });
+  return trips;
+}
+
+/* ── Save All Trips at once ── */
+function saveAllTrips(){
+  var entries=document.querySelectorAll('.trip-entry');
+  entries.forEach(function(entry){
+    var id=entry.id.replace('trip-','');
+    if(!entry.classList.contains('is-saved')){
+      saveTrip(id);
+    }
+  });
+  // Also save form state to localStorage
+  saveFormState();
+  // Turn green after DOM settles
+  setTimeout(function(){
+    var btn=document.getElementById('save-all-btn');
+    if(btn){ btn.textContent='✅ All Saved!'; btn.classList.add('saved'); }
+  }, 50);
+}
+
+/* Shared helper: replace _INIT_ constants in HTML string */
+function replaceInit(src, name, value){
+  var marker = 'var '+name+' = ';
+  var start = src.indexOf(marker);
+  if(start===-1){ marker='const '+name+' = '; start=src.indexOf(marker); }
+  if(start === -1) return src;
+  var pos = start + marker.length;
+  var depth = 0, inStr = false, strChar = '';
+  while(pos < src.length){
+    var c = src[pos];
+    if(!inStr && (c=='"'||c=="'"||c=='`')){ inStr=true; strChar=c; }
+    else if(inStr && c===strChar && src[pos-1]!=='\\'){
+      inStr=false;
+    }
+    else if(!inStr && (c=='{'||c=='['||c=='(')){ depth++; }
+    else if(!inStr && (c=='}'||c==']'||c==')')){ depth--; }
+    else if(!inStr && depth===0 && c===';'){ break; }
+    pos++;
+  }
+  return src.slice(0,start) + marker + value + src.slice(pos);
+}
+
+/* ── Download (produces fully editable copy) ── */
+function downloadLog(){
+  // Force-save ALL trips before collecting so dataset is always up to date
+  document.querySelectorAll('.trip-entry').forEach(function(entry){
+    var id=entry.id.replace('trip-','');
+    saveTrip(id);
+  });
+  // Reset Save All button after download
+  var btn=document.getElementById('save-all-btn');
+  if(btn){ btn.textContent='✓ Save All Trips'; btn.classList.remove('saved'); }
+  const provider=val('provider'),date=val('date'),license=val('license'),vin=val('vin'),driverName=val('driver-name');
+  const driverSigImg=canvasToImg('driver-sig-canvas');
+  const trips=collectTrips();
+
+  // Serialize data safely
+  const tripsStr=JSON.stringify(trips);
+  const driverSigStr=driverSigImg?JSON.stringify(driverSigImg):'null';
+  const fieldsStr=JSON.stringify({provider:provider,date:date,license:license,vin:vin,driverName:driverName});
+
+  // Clear rendered trips so outerHTML does not include them (prevents duplicates on reload)
+  var tripsList=document.getElementById('trips-list');
+  var savedTripsHTML=tripsList.innerHTML;
+  tripsList.innerHTML='';
+
+  // CRITICAL: Reset auth state in DOM before capturing outerHTML
+  // so downloaded file always opens at login screen, not logged-in state
+  var authOverlay=document.getElementById('auth-overlay');
+  var prevAuthDisplay=authOverlay?authOverlay.style.display:'';
+  if(authOverlay) authOverlay.style.display='flex';
+  var headerUser=document.getElementById('header-username');
+  var prevHeaderUser=headerUser?headerUser.textContent:'';
+  if(headerUser) headerUser.textContent='';
+  var manageBtn=document.getElementById('manage-users-btn');
+  var prevManageDisplay=manageBtn?manageBtn.style.display:'';
+  if(manageBtn) manageBtn.style.display='none';
+
+  var html=document.documentElement.outerHTML;
+
+  // Restore DOM state after capturing
+  tripsList.innerHTML=savedTripsHTML;
+  if(authOverlay) authOverlay.style.display=prevAuthDisplay;
+  if(headerUser) headerUser.textContent=prevHeaderUser;
+  if(manageBtn) manageBtn.style.display=prevManageDisplay;
+
+  html = replaceInit(html, '_INIT_TRIPS', tripsStr);
+  html = replaceInit(html, '_INIT_DRIVER_SIG', driverSigStr);
+  html = replaceInit(html, '_INIT_FIELDS', fieldsStr);
+  // Embed current user accounts so other devices can log in
+  var usersForEmbed=getUsers();
+  html = replaceInit(html, '_INIT_USERS', JSON.stringify(usersForEmbed));
+  html = replaceInit(html, '_IS_DOWNLOADED', 'true');
+  html='<!DOCTYPE html>\n'+html;
+
+  const blob=new Blob([html],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement('a');
+  link.href=url;
+  // Fixed filename so every download overwrites the same file in Downloads.
+  // New date of service = same file but with new data inside.
+  // This way drivers always work with one file, not accumulate many.
+  link.download = 'Erta_Ale_Trip_Log_'+(date||new Date().toISOString().slice(0,10))+'.html';
+  document.body.appendChild(link);
+  // Try Save As dialog (Chrome/Edge) — falls back to normal download
+  var dlFilename = link.download;
+  if(window.showSaveFilePicker){
+    blob.arrayBuffer().then(function(buf){
+      window.showSaveFilePicker({
+        suggestedName: dlFilename,
+        types: [{
+          description: 'HTML File',
+          accept: {'text/html': ['.html']}
+        }]
+      }).then(function(fileHandle){
+        return fileHandle.createWritable();
+      }).then(function(writable){
+        writable.write(new Blob([buf],{type:'text/html'}));
+        return writable.close();
+      }).then(function(){
+        showToast('✅ File saved!');
+      }).catch(function(err){
+        if(err.name!=='AbortError'){
+          // User cancelled or error — fall back to normal download
+          link.click();
+        }
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      });
+    });
+  } else {
+    // Firefox/Safari — normal download, show tip
+    setTimeout(function(){
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      showToast('Tip: Right-click → Save As to choose location');
+    },100);
+  }
+}
+
+
+
+/* ══════════════════════════════════════════
+   AUTH SYSTEM — hash-based, in-memory + localStorage
+   ══════════════════════════════════════════ */
+
+// In-memory session (works even when localStorage is blocked on local files)
+var _currentUser = null;
+var _isAdmin = false; // tracks admin role even after username change
+
+function _encodePass(p){
+  try{ return 'pw:'+btoa(unescape(encodeURIComponent(p))); }
+  catch(e){ return 'pw:'+btoa(p); }
+}
+function _checkPass(input, stored){
+  if(!stored) return false;
+  if(_encodePass(input)===stored) return true;
+  /* legacy fb: */
+  var h1=5381,h2=52711;
+  for(var i=0;i<input.length;i++){var c=input.charCodeAt(i);h1=((h1<<5)+h1)^c;h1>>>=0;h2=((h2<<5)+h2)^c;h2>>>=0;}
+  if('fb:'+(h1>>>0).toString(16).padStart(8,'0')+(h2>>>0).toString(16).padStart(8,'0')===stored) return true;
+  /* legacy 8-char */
+  if(stored.length===8){var h=0;for(var j=0;j<input.length;j++){h=((h<<5)-h)+input.charCodeAt(j);h|=0;}if(Math.abs(h).toString(16).padStart(8,'0')===stored)return true;}
+  return false;
+}
+
+function tryLS(fn){ try{ return fn(); }catch(e){ return null; } }
+// Built-in accounts: admin/admin123  driver/driver1
+// (SHA-256 hashes — work even when localStorage is blocked on local files)
+var _BUILTIN_USERS = {
+  'admin':  { name:'Admin',  hash:'pw:YWRtaW4xMjM=', role:'admin' },
+  'driver': { name:'Driver', hash:'pw:ZHJpdmVyMQ==' }
+};
+function getUsers(){
+  /* ── Source of truth: _INIT_USERS baked into this HTML file ──
+     This works on Chrome, Firefox, Edge, Safari, iOS, Android
+     because it requires NO localStorage at all.
+     localStorage is only used to layer in changes made this session. */
+  var users = {};
+
+  /* 1. Builtins (always available, always correct hashes) */
+  Object.keys(_BUILTIN_USERS).forEach(function(k){
+    users[k.toLowerCase()] = _BUILTIN_USERS[k];
+  });
+
+  /* 2. Embedded users from _INIT_USERS — baked into the file by Download */
+  if(_INIT_USERS){
+    Object.keys(_INIT_USERS).forEach(function(k){
+      users[k.toLowerCase()] = _INIT_USERS[k];
+    });
+  }
+
+  /* 3. Session cache from localStorage (changes made since last download) */
+  try{
+    var raw = localStorage.getItem('erta_ale_users');
+    var cached = JSON.parse(raw||'{}');
+    Object.keys(cached).forEach(function(k){
+      var u = k.toLowerCase(), cu = cached[k];
+      /* Only apply cached data if it has a valid pw: hash
+         — ignore any stale sha256:/fb: hashes from old versions */
+      if(cu.hash && cu.hash.startsWith('pw:')){
+        users[u] = cu;
+      } else if(!users[u]){
+        /* New user with old hash — include but they'll need reset */
+        users[u] = cu;
+      }
+    });
+  }catch(e){}
+
+  return users;
+}
+function saveUsers(u){
+  /* Save to localStorage as session cache */
+  tryLS(function(){ localStorage.setItem('erta_ale_users', JSON.stringify(u)); });
+  tryLS(function(){ localStorage.setItem('erta_users',     JSON.stringify(u)); });
+  /* Update in-memory so current session sees changes immediately */
+  window._EMBEDDED_USERS = u;
+  /* IMPORTANT: users only permanently travel to other browsers
+     when admin clicks Download Trip Log — that bakes them into _INIT_USERS */
+}
+function getSavedSession(){
+  /* Use sessionStorage so session clears when tab/browser closes.
+     Every fresh file open requires login — no auto-login carry-over. */
+  return tryLS(()=>sessionStorage.getItem('erta_ale_session')) || '';
+}
+function savePersistSession(u){
+  tryLS(()=>sessionStorage.setItem('erta_ale_session', u));
+  /* Also clear any old localStorage sessions so they never auto-login */
+  tryLS(()=>localStorage.removeItem('erta_ale_session'));
+  tryLS(()=>localStorage.removeItem('erta_session'));
+}
+function removePersistSession(){
+  tryLS(()=>sessionStorage.removeItem('erta_ale_session'));
+  tryLS(()=>localStorage.removeItem('erta_ale_session'));
+  tryLS(()=>localStorage.removeItem('erta_session'));
+}
+
+function showSignIn(){
+  document.getElementById('signin-card').style.display='block';
+  document.getElementById('signup-card').style.display='none';
+  document.getElementById('signin-error').classList.remove('show');
+  document.getElementById('signin-user').value='';
+  document.getElementById('signin-pass').value='';
+}
+function showSignUp(){
+  document.getElementById('signup-card').style.display='block';
+  document.getElementById('signin-card').style.display='none';
+  document.getElementById('signup-error').classList.remove('show');
+  document.getElementById('signup-success').classList.remove('show');
+  document.getElementById('signup-name').value='';
+  document.getElementById('signup-user').value='';
+  document.getElementById('signup-pass').value='';
+  document.getElementById('signup-pass2').value='';
+}
+
+function doSignIn(){
+  var user = document.getElementById('signin-user').value.trim().toLowerCase();
+  var pass = document.getElementById('signin-pass').value;
+  var err  = document.getElementById('signin-error');
+  err.classList.remove('show');
+  if(!user||!pass){err.textContent='Please enter username and password.';err.classList.add('show');return;}
+  var users = getUsers();
+  if(!users[user]){err.textContent='Username not found.';err.classList.add('show');return;}
+  if(users[user].disabled===true){err.textContent='This account has been disabled.';err.classList.add('show');return;}
+  if(!_checkPass(pass,users[user].hash)){
+    if((users[user].hash||'').indexOf('sha256')>=0){
+      err.textContent='Account needs password reset. Use the panel below.';
+      var rp=document.getElementById('reset-panel'); if(rp)rp.style.display='block';
+    } else {
+      err.textContent='Incorrect password.';
+    }
+    err.classList.add('show'); return;
+  }
+  /* Upgrade hash to pw: if needed */
+  var nh=_encodePass(pass);
+  if(nh!==users[user].hash){users[user].hash=nh;saveUsers(users);}
+  _currentUser=user;
+  _isAdmin=(users[user].role==='admin'||user==='admin');
+  savePersistSession(user);
+  logActivity(user,'signed in');
+  enterApp(users[user].name||user);
+}
+
+function doSignUp(){
+  // Only admin can create accounts
+  if(!_isAdmin){
+    alert('Only the administrator can create accounts.');
+    return;
+  }
+  var name=document.getElementById('signup-name').value.trim();
+  var user=document.getElementById('signup-user').value.trim().toLowerCase();
+  var pass=document.getElementById('signup-pass').value;
+  var pass2=document.getElementById('signup-pass2').value;
+  var err=document.getElementById('signup-error');
+  var suc=document.getElementById('signup-success');
+  err.classList.remove('show'); suc.classList.remove('show');
+  if(!name||!user||!pass||!pass2){ err.textContent='All fields are required.'; err.classList.add('show'); return; }
+  if(user.length<3){ err.textContent='Username must be at least 3 characters.'; err.classList.add('show'); return; }
+  if(pass.length<6){ err.textContent='Password must be at least 6 characters.'; err.classList.add('show'); return; }
+  if(pass!==pass2){ err.textContent='Passwords do not match.'; err.classList.add('show'); return; }
+  var users=getUsers();
+  if(users[user]){ err.textContent='Username already taken. Choose another.'; err.classList.add('show'); return; }
+  var hash=_encodePass(pass);
+  users[user]={name:name,hash:hash,created:new Date().toISOString()};
+  saveUsers(users);
+  suc.textContent='✅ Account created! Now click \'Download Trip Log\' so drivers on other devices can log in.';
+  suc.classList.add('show');
+  // Clear the form fields so admin can create another account
+  setTimeout(function(){
+    document.getElementById('signup-name').value='';
+    document.getElementById('signup-user').value='';
+    document.getElementById('signup-pass').value='';
+    document.getElementById('signup-pass2').value='';
+    // Refresh users list if that tab is visible
+    renderUsersList();
+  },800);
+}
+
+/* ── Persist form state per user ── */
+function formStateKey(user){ return 'erta_form_'+user; }
+function stickyKey(user){ return 'erta_sticky_'+user; }
+
+function saveSticky(){
+  if(!_currentUser) return;
+  var sticky={
+    provider: val('provider'),
+    license:  val('license'),
+    vin:      val('vin'),
+    driverName: val('driver-name')
+  };
+  tryLS(()=>localStorage.setItem(stickyKey(_currentUser), JSON.stringify(sticky)));
+}
+
+function loadSticky(user){
+  var raw=tryLS(()=>localStorage.getItem(stickyKey(user)));
+  if(!raw) return null;
+  try{ return JSON.parse(raw); }catch(e){ return null; }
+}
+
+function applySticky(sticky){
+  if(!sticky) return;
+  if(sticky.provider!=null&&!val('provider')) document.getElementById('provider').value=sticky.provider;
+  if(sticky.license!=null&&!val('license'))   document.getElementById('license').value=sticky.license;
+  if(sticky.vin!=null&&!val('vin'))           document.getElementById('vin').value=sticky.vin;
+  if(sticky.driverName!=null&&!val('driver-name')) document.getElementById('driver-name').value=sticky.driverName;
+}
+
+// Compress a canvas/dataUrl to small JPEG for storage
+function compressSig(dataUrl, quality){
+  if(!dataUrl) return '';
+  try{
+    var img=new Image();
+    img.src=dataUrl;
+    var c=document.createElement('canvas');
+    c.width=300; c.height=80;
+    var ctx=c.getContext('2d');
+    ctx.fillStyle='white';
+    ctx.fillRect(0,0,300,80);
+    ctx.drawImage(img,0,0,300,80);
+    return c.toDataURL('image/jpeg', quality||0.5);
+  }catch(e){ return dataUrl; }
+}
+
+function saveFormState(){
+  if(!_currentUser) return;
+  var _si=document.getElementById('sync-indicator');
+  if(_si){_si.textContent='Saving…';_si.style.color='var(--gray-400)';}
+  setTimeout(function(){
+    if(_si){_si.textContent='✓ Saved';_si.style.color='var(--green)';}
+    setTimeout(function(){if(_si)_si.textContent='';},2000);
+  },300);
+  saveSticky(); // always persist sticky fields
+  try{
+    var trips=collectTrips();
+    // Strip sigImg from trips for main state (store sigs separately to avoid size limit)
+    var tripsNoSig=trips.map(function(t){
+      var copy=Object.assign({},t);
+      copy.sigImg=''; // remove from main blob
+      return copy;
+    });
+    var state={
+      provider:val('provider'), date:val('date'),
+      license:val('license'), vin:val('vin'),
+      driverName:val('driver-name'),
+      trips:tripsNoSig
+    };
+    tryLS(()=>localStorage.setItem(formStateKey(_currentUser), JSON.stringify(state)));
+    // Store driver sig separately compressed
+    var dSig=canvasToImg('driver-sig-canvas');
+    if(dSig) tryLS(()=>localStorage.setItem(formStateKey(_currentUser)+'_dsig', compressSig(dSig,0.6)));
+    // Store each trip sig separately compressed
+    trips.forEach(function(t){
+      if(t.sigImg) tryLS(()=>localStorage.setItem(formStateKey(_currentUser)+'_sig_'+t.id, compressSig(t.sigImg,0.6)));
+      else tryLS(()=>localStorage.removeItem(formStateKey(_currentUser)+'_sig_'+t.id));
+    });
+  }catch(e){ console.warn('saveFormState error',e); }
+}
+
+function loadFormState(user){
+  var raw=tryLS(()=>localStorage.getItem(formStateKey(user)));
+  if(!raw) return null;
+  try{
+    var state=JSON.parse(raw);
+    // Restore driver sig
+    var dSig=tryLS(()=>localStorage.getItem(formStateKey(user)+'_dsig'))||'';
+    state.driverSig=dSig;
+    // Restore trip sigs
+    if(state.trips){
+      state.trips=state.trips.map(function(t){
+        var sig=tryLS(()=>localStorage.getItem(formStateKey(user)+'_sig_'+t.id))||'';
+        t.sigImg=sig;
+        return t;
+      });
+    }
+    return state;
+  }catch(e){ return null; }
+}
+
+function applyFormState(state){
+  if(!state) return;
+  // Always restore — use != null so empty string '' still gets applied
+  if(state.provider!=null) document.getElementById('provider').value=state.provider;
+  if(state.date!=null)     document.getElementById('date').value=state.date;
+  if(state.license!=null)  document.getElementById('license').value=state.license;
+  if(state.vin!=null)      document.getElementById('vin').value=state.vin;
+  if(state.driverName!=null) document.getElementById('driver-name').value=state.driverName;
+  initSigPad('driver-sig-canvas','driver-sig-wrap','driver-sig-placeholder','driver-sig-status');
+  if(state.driverSig) restoreSig('driver-sig-canvas','driver-sig-wrap','driver-sig-placeholder','driver-sig-status',state.driverSig,null);
+  document.getElementById('trips-list').innerHTML='';
+  tripCount=0;
+  if(state.trips&&state.trips.length>0){
+    state.trips.forEach(function(t){ addTrip(t); });
+  } else {
+    addTrip();
+  }
+}
+
+function enterApp(displayName){
+  document.getElementById('auth-overlay').style.display='none';
+  document.getElementById('header-username').textContent='👤 '+displayName;
+  // Show manage users button only for admin
+  var muBtn=document.getElementById('manage-users-btn');
+  if(muBtn) muBtn.style.display=(_isAdmin)?'inline-block':'none';
+  // Prefer downloaded embedded state, then localStorage, then fresh
+  var state=null;
+  if(window._DOWNLOADED_STATE&&(window._DOWNLOADED_STATE.fields||window._DOWNLOADED_STATE.trips)){
+    var ds=window._DOWNLOADED_STATE;
+    state={
+      provider:ds.fields&&ds.fields.provider||'',
+      date:ds.fields&&ds.fields.date||'',
+      license:ds.fields&&ds.fields.license||'',
+      vin:ds.fields&&ds.fields.vin||'',
+      driverName:ds.fields&&ds.fields.driverName||'',
+      driverSig:ds.driverSig||'',
+      trips:ds.trips||[]
+    };
+    window._DOWNLOADED_STATE=null; // only use once
+  } else {
+    state=loadFormState(_currentUser);
+  }
+  if(state){
+    applyFormState(state);
+  } else {
+    document.getElementById('trips-list').innerHTML='';
+    tripCount=0;
+    initSigPad('driver-sig-canvas','driver-sig-wrap','driver-sig-placeholder','driver-sig-status');
+    addTrip();
+  }
+  // Apply sticky fields (provider, license, vin, driver name) if not already set
+  var sticky=loadSticky(_currentUser);
+  if(sticky) applySticky(sticky);
+  // Track the current date for fresh-day detection
+  var currentDate = val('date');
+  if(currentDate && _currentUser){
+    tryLS(()=>localStorage.setItem('erta_last_date_'+_currentUser, currentDate));
+  }
+  // Auto-save on any change
+  startAutoSave();
+  // Start session timeout (1 hour)
+  resetSessionTimer();
+}
+
+var _autoSaveTimer=null;
+function startAutoSave(){
+  if(_autoSaveTimer) clearInterval(_autoSaveTimer);
+  _autoSaveTimer=setInterval(function(){ saveFormState(); },30000);
+}
+function stopAutoSave(){
+  if(_autoSaveTimer){ clearInterval(_autoSaveTimer); _autoSaveTimer=null; }
+}
+
+function apTab(tab){
+  ['create','users','admin','log'].forEach(function(t){
+    document.getElementById('ap-'+t).style.display = t===tab?'block':'none';
+    var btn=document.getElementById('tab-'+t);
+    if(btn){ btn.classList.toggle('ap-tab-active', t===tab); }
+  });
+  if(tab==='users') renderUsersList();
+  if(tab==='log') renderActivityLog();
+  if(tab==='admin'){
+    document.getElementById('admin-new-user').value='';
+    document.getElementById('admin-new-pass').value='';
+    document.getElementById('admin-new-pass2').value='';
+    document.getElementById('admin-cur-pass').value='';
+    document.getElementById('admin-cred-error').classList.remove('show');
+    document.getElementById('admin-cred-success').classList.remove('show');
+  }
+}
+
+function openAdminPanel(){
+  if(!_isAdmin){ alert('Admin only.'); return; }
+  document.getElementById('signin-card').style.display='none';
+  document.getElementById('signup-card').style.display='block';
+  document.getElementById('signup-error').classList.remove('show');
+  document.getElementById('signup-success').classList.remove('show');
+  document.getElementById('signup-name').value='';
+  document.getElementById('signup-user').value='';
+  document.getElementById('signup-pass').value='';
+  document.getElementById('signup-pass2').value='';
+  apTab('create');
+  document.getElementById('auth-overlay').style.display='flex';
+}
+
+function closeAdminPanel(){
+  document.getElementById('auth-overlay').style.display='none';
+  document.getElementById('signup-card').style.display='none';
+}
+
+function renderUsersList(){
+  var section=document.getElementById('users-list-section');
+  if(!section) return;
+  var users=getUsers();
+  var keys=Object.keys(users).filter(function(u){ return u!=='admin'; });
+  if(keys.length===0){
+    section.innerHTML='<div style="font-size:12px;color:#9ca3af;text-align:center;padding:20px 0;">No driver accounts yet.<br>Use the Create User tab to add one.</div>';
+    return;
+  }
+  section.innerHTML='<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Driver Accounts</div>';
+  keys.forEach(function(u){
+    var wrap=document.createElement('div');
+    wrap.style.cssText='background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:8px;overflow:hidden;';
+
+    // User info row
+    var info=document.createElement('div');
+    info.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:8px 10px;';
+    var isDisabled=users[u].disabled===true;
+    wrap.classList.toggle('user-disabled', isDisabled);
+    info.innerHTML='<div><div style="font-size:12px;font-weight:600;color:#1f2937;">&#128100; '+users[u].name+(isDisabled?'<span class="disabled-badge">Disabled</span>':'')+'</div><div style="font-size:10px;color:#9ca3af;">@'+u+'</div></div>';
+
+    var btnGroup=document.createElement('div');
+    btnGroup.style.cssText='display:flex;gap:6px;';
+
+    // Change Password button
+    var chgBtn=document.createElement('button');
+    chgBtn.textContent='Change PW';
+    chgBtn.style.cssText='font-size:10px;color:var(--blue);background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:4px;padding:3px 8px;cursor:pointer;font-family:inherit;font-weight:600;';
+    chgBtn.onclick=(function(username, wrapEl){ return function(){
+      // Toggle inline change-pw form
+      var existing=wrapEl.querySelector('.chg-pw-form');
+      if(existing){ existing.remove(); return; }
+      var form=document.createElement('div');
+      form.className='chg-pw-form';
+      form.style.cssText='padding:10px;border-top:1px solid #e5e7eb;background:white;';
+      var lbl=document.createElement('div');
+      lbl.style.cssText='font-size:11px;font-weight:600;color:#6b7280;margin-bottom:6px;';
+      lbl.textContent='New password for @'+username;
+      var row=document.createElement('div');
+      row.style.cssText='display:flex;gap:6px;align-items:center;';
+      var pwInp=document.createElement('input');
+      pwInp.type='password'; pwInp.id='chg-pw-'+username;
+      pwInp.placeholder='New password (min 6)';
+      pwInp.style.cssText='flex:1;height:32px;border:1.5px solid #e5e7eb;border-radius:6px;padding:0 8px;font-size:12px;font-family:inherit;';
+      var saveBtn=document.createElement('button');
+      saveBtn.textContent='Save';
+      saveBtn.style.cssText='height:32px;padding:0 10px;background:var(--green);color:white;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;';
+      saveBtn.addEventListener('click',(function(u){ return function(){ doChangeUserPw(u); }; })(username));
+      var cancelBtn=document.createElement('button');
+      cancelBtn.textContent='Cancel';
+      cancelBtn.style.cssText='height:32px;padding:0 8px;background:none;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;';
+      cancelBtn.addEventListener('click',function(){ form.remove(); });
+      var msgDiv=document.createElement('div');
+      msgDiv.id='chg-pw-msg-'+username;
+      msgDiv.style.cssText='font-size:11px;margin-top:5px;';
+      row.appendChild(pwInp); row.appendChild(saveBtn); row.appendChild(cancelBtn);
+      form.appendChild(lbl); form.appendChild(row); form.appendChild(msgDiv);
+      wrapEl.appendChild(form);
+    }; })(u, wrap);
+
+    // Remove button
+    var delBtn=document.createElement('button');
+    delBtn.textContent='Remove';
+    delBtn.style.cssText='font-size:10px;color:#dc2626;background:none;border:1px solid #fca5a5;border-radius:4px;padding:3px 8px;cursor:pointer;font-family:inherit;font-weight:600;';
+    delBtn.onclick=(function(username){ return function(){
+      if(!confirm('Remove user "'+username+'"?')) return;
+      var users=getUsers();
+      delete users[username];
+      saveUsers(users);
+      renderUsersList();
+    }; })(u);
+
+    var togBtn=document.createElement('button');
+    togBtn.textContent=users[u].disabled?'Enable':'Disable';
+    togBtn.style.cssText='font-size:10px;color:'+(users[u].disabled?'#059669':'#d97706')+';background:'+(users[u].disabled?'#ecfdf5':'#fffbeb')+';border:1px solid '+(users[u].disabled?'#6ee7b7':'#fde68a')+';border-radius:4px;padding:3px 8px;cursor:pointer;font-family:inherit;font-weight:600;';
+    togBtn.onclick=(function(username){ return function(){
+      var users=getUsers();
+      if(!users[username]) return;
+      users[username].disabled=!users[username].disabled;
+      var action=users[username].disabled?'disabled':'enabled';
+      tryLS(function(){ localStorage.setItem('erta_ale_users', JSON.stringify(users)); });
+      tryLS(function(){ localStorage.setItem('erta_users', JSON.stringify(users)); });
+      logActivity('admin', action+' account @'+username);
+      renderUsersList();
+    }; })(u);
+    btnGroup.appendChild(togBtn);
+    btnGroup.appendChild(chgBtn);
+    btnGroup.appendChild(delBtn);
+    info.appendChild(btnGroup);
+    wrap.appendChild(info);
+    section.appendChild(wrap);
+  });
+}
+
+function doChangeUserPw(username){
+  var inp=document.getElementById('chg-pw-'+username);
+  var msg=document.getElementById('chg-pw-msg-'+username);
+  if(!inp||!msg) return;
+  var pw=inp.value.trim();
+  if(pw.length<6){ msg.style.color='#dc2626'; msg.textContent='Password must be at least 6 characters.'; return; }
+  var hash=_encodePass(pw);
+  var users=getUsers();
+  if(!users[username]){ msg.style.color='#dc2626'; msg.textContent='User not found.'; return; }
+  users[username].hash=hash;
+  saveUsers(users);
+  msg.style.color='#059669'; msg.textContent='✅ Password updated!';
+  inp.value='';
+  setTimeout(function(){ inp.closest('.chg-pw-form').remove(); },1500);
+}
+
+function changeAdminCredentials(){
+  var newUser=document.getElementById('admin-new-user').value.trim().toLowerCase();
+  var newPass=document.getElementById('admin-new-pass').value;
+  var newPass2=document.getElementById('admin-new-pass2').value;
+  var curPass=document.getElementById('admin-cur-pass').value;
+  var err=document.getElementById('admin-cred-error');
+  var suc=document.getElementById('admin-cred-success');
+  err.classList.remove('show'); suc.classList.remove('show');
+
+  if(!newUser||!newPass||!newPass2||!curPass){
+    err.textContent='All fields are required.'; err.classList.add('show'); return;
+  }
+  if(newUser.length<3){ err.textContent='Username must be at least 3 characters.'; err.classList.add('show'); return; }
+  if(newPass.length<6){ err.textContent='Password must be at least 6 characters.'; err.classList.add('show'); return; }
+  if(newPass!==newPass2){ err.textContent='New passwords do not match.'; err.classList.add('show'); return; }
+
+  // Verify current password
+  var curHash=_encodePass(curPass);
+  var users=getUsers();
+  var _akey=Object.keys(users).find(function(k){return users[k].role==='admin';});
+  if(!_akey||!_checkPass(curPass,users[_akey].hash)){
+    err.textContent='Current password is incorrect.'; err.classList.add('show'); return;
+  }
+
+  // Save new admin credentials
+  var newHash=_encodePass(newPass);
+  var adminData={ name:'Admin', hash:newHash, role:'admin' };
+  // Remove old admin key if username changed
+  delete users['admin'];
+  users[newUser]=adminData;
+  tryLS(function(){ localStorage.setItem('erta_ale_users', JSON.stringify(users)); });
+  tryLS(function(){ localStorage.setItem('erta_users', JSON.stringify(users)); });
+
+  // Update builtin so it works even without localStorage
+  _BUILTIN_USERS[newUser]=adminData;
+  delete _BUILTIN_USERS['admin'];
+
+  // Update current session
+  _currentUser=newUser;
+  savePersistSession(newUser);
+
+  suc.textContent='✅ Admin credentials updated! New username: '+newUser;
+  suc.classList.add('show');
+  document.getElementById('admin-new-user').value='';
+  document.getElementById('admin-new-pass').value='';
+  document.getElementById('admin-new-pass2').value='';
+  document.getElementById('admin-cur-pass').value='';
+}
+
+function doSignOut(){
+  if(!confirm('Are you sure you want to sign out?')) return;
+  saveFormState(); // save before leaving
+  stopAutoSave();
+  stopSessionTimer();
+  _isAdmin=false;
+  var leavingUser=_currentUser;
+  logActivity(leavingUser, 'signed out');
+  _currentUser=null;
+  removePersistSession();
+  // Clear the form
+  document.getElementById('trips-list').innerHTML='';
+  tripCount=0;
+  clearSig('driver-sig-canvas','driver-sig-wrap','driver-sig-placeholder','driver-sig-status');
+  ['provider','date','license','vin','driver-name'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
+  // Show auth overlay
+  document.getElementById('auth-overlay').style.display='flex';
+  showSignIn();
+}
+
+function checkAuth(){
+  /* sessionStorage clears on tab close, so every fresh open needs login.
+     Also clear any stale localStorage sessions from old app versions. */
+  tryLS(()=>localStorage.removeItem('erta_ale_session'));
+  tryLS(()=>localStorage.removeItem('erta_session'));
+  var session=getSavedSession();
+  if(session){
+    var users=getUsers();
+    if(users[session]){
+      _currentUser=session;
+      _isAdmin=(users[session].role==='admin'||session==='admin');
+      enterApp(users[session].name||session);
+      return true;
+    }
+    removePersistSession();
+  }
+  showSignIn();
+  return false;
+}
+
+/* ── Boot ── */
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState==='hidden') saveFormState();
+});
+window.addEventListener('beforeunload',function(){ saveFormState(); });
+
+window.addEventListener('load',function(){
+  // If this is a downloaded file with embedded data, treat it as initial state
+  if(_INIT_FIELDS||_INIT_TRIPS){
+    // Downloaded file: restore embedded data after auth
+    window._DOWNLOADED_STATE={
+      fields:_INIT_FIELDS, trips:_INIT_TRIPS, driverSig:_INIT_DRIVER_SIG
+    };
+  }
+  // Restore embedded users — store in memory so they work even when
+  // localStorage is blocked (iOS Safari, local file://, private browsing, etc.)
+  if(_INIT_USERS){
+    try{
+      window._EMBEDDED_USERS = _INIT_USERS;
+      /* Merge into builtins so getUsers() sees them even before localStorage */
+      Object.keys(_INIT_USERS).forEach(function(k){ _BUILTIN_USERS[k.toLowerCase()]=_INIT_USERS[k]; });
+      // Also try to persist to localStorage as a bonus (may fail silently)
+      var existing=tryLS(function(){ return JSON.parse(localStorage.getItem('erta_ale_users')||'{}'); })||{};
+      Object.keys(_INIT_USERS).forEach(function(k){ existing[k]=_INIT_USERS[k]; });
+      tryLS(function(){ localStorage.setItem('erta_ale_users', JSON.stringify(existing)); });
+      tryLS(function(){ localStorage.setItem('erta_users', JSON.stringify(existing)); });
+    }catch(e){ window._EMBEDDED_USERS = _INIT_USERS; }
+  }
+  checkAuth();
+});
+
+
+function getDeviceId(){
+  let id = localStorage.getItem("device_id");
+  if(!id){
+    id = "DEV-" + Math.random().toString(36).substr(2,9);
+    localStorage.setItem("device_id", id);
+  }
+  return id;
+}
+
+function toggleSaveTrip(id){
+  const entry=document.getElementById('trip-'+id);
+
+  if(entry.classList.contains('is-saved')){
+    // revert UI only (do NOT erase saved data)
+    entry.classList.remove('is-saved');
+
+    const badge=document.getElementById('trip-lbl-'+id)?.querySelector('.trip-saved-badge');
+    if(badge) badge.remove();
+
+  } else {
+    // use original save logic
+    saveTrip(id);
+  }
+}
+
+function toggleSaveAllTrips(){
+  var entries = document.querySelectorAll('.trip-entry');
+  var btn = document.getElementById('save-all-btn');
+
+  var anyNotSaved = Array.from(entries).some(function(e){
+    return !e.classList.contains('is-saved');
+  });
+
+  var isGreen = btn && btn.classList.contains('saved');
+
+  if(anyNotSaved){
+    // Save all unsaved trips → turn green
+    saveAllTrips();
+  } else if(isGreen){
+    // All saved and already green → reset to blue (toggle off)
+    btn.textContent = '✓ Save All Trips';
+    btn.classList.remove('saved');
+  } else {
+    // All saved but button is blue → just turn green (acknowledge)
+    btn.textContent = '✅ All Saved!';
+    btn.classList.add('saved');
+  }
+}
+
+function togglePassVis(inputId, btn){
+  var inp=document.getElementById(inputId);
+  if(!inp) return;
+  if(inp.type==='password'){
+    inp.type='text';
+    btn.innerHTML='&#128064;'; // open eye
+  } else {
+    inp.type='password';
+    btn.innerHTML='&#128065;'; // closed eye
+  }
+}
+
+function onDateChange(newDate){
+  if(!_currentUser) return;
+  // Get the last saved date for this user
+  var lastDate = tryLS(()=>localStorage.getItem('erta_last_date_'+_currentUser))||'';
+  if(lastDate && lastDate !== newDate){
+    // Day has changed - confirm fresh start
+    var msg = 'Date changed from '+lastDate+' to '+newDate+'.\nStart fresh trip entries for the new day?\n(Current trips will be cleared)';
+    if(confirm(msg)){
+      // Auto-save current day to history before clearing
+      var currentDate=lastDate;
+      if(currentDate){
+        document.querySelectorAll('.trip-entry').forEach(function(entry){
+          var id=entry.id.replace('trip-','');
+          saveTrip(id);
+        });
+        var trips=collectTrips();
+        if(trips.length>0){
+          var history=getHistory();
+          history[currentDate]={
+            date:currentDate,
+            savedAt:new Date().toISOString(),
+            provider:val('provider'),
+            license:val('license'),
+            vin:val('vin'),
+            driverName:val('driver-name'),
+            driverSig:canvasToImg('driver-sig-canvas'),
+            trips:trips
+          };
+          saveHistory(history);
+        }
+      }
+      // Clear all trips and start fresh
+      document.getElementById('trips-list').innerHTML='';
+      tripCount=0;
+      clearSig('driver-sig-canvas','driver-sig-wrap','driver-sig-placeholder','driver-sig-status');
+      addTrip();
+      // Save new date
+      tryLS(()=>localStorage.setItem('erta_last_date_'+_currentUser, newDate));
+      saveFormState();
+    } else {
+      // Revert date back
+      document.getElementById('date').value=lastDate;
+    }
+  } else {
+    // First time setting or same date - just save it
+    tryLS(()=>localStorage.setItem('erta_last_date_'+_currentUser, newDate));
+    saveFormState();
+  }
+}
+
+/* ══════════════════════════════════════════
+   DAILY LOG HISTORY SYSTEM
+   ══════════════════════════════════════════ */
+
+function historyKey(user){ return 'erta_history_'+user; }
+
+function getHistory(){
+  var raw=tryLS(()=>localStorage.getItem(historyKey(_currentUser)));
+  try{ return JSON.parse(raw||'{}'); }catch(e){ return {}; }
+}
+
+function saveHistory(h){
+  tryLS(()=>localStorage.setItem(historyKey(_currentUser), JSON.stringify(h)));
+}
+
+function saveDayToHistory(){
+  var date=val('date');
+  if(!date){ alert('Please set a Date of Service before saving to history.'); return; }
+
+  // Force save all trips first
+  document.querySelectorAll('.trip-entry').forEach(function(entry){
+    var id=entry.id.replace('trip-','');
+    saveTrip(id);
+  });
+
+  var trips=collectTrips();
+  var driverSig=canvasToImg('driver-sig-canvas');
+
+  var dayData={
+    date:date,
+    savedAt:new Date().toISOString(),
+    provider:val('provider'),
+    license:val('license'),
+    vin:val('vin'),
+    driverName:val('driver-name'),
+    driverSig:driverSig,
+    trips:trips
+  };
+
+  var history=getHistory();
+  history[date]=dayData;
+  saveHistory(history);
+
+  // Visual feedback on button
+  var btn=event.target;
+  var orig=btn.innerHTML;
+  btn.innerHTML='✅ Saved to History!';
+  btn.style.background='var(--green)';
+  setTimeout(function(){ btn.innerHTML=orig; btn.style.background=''; }, 2000);
+}
+
+function openHistory(){
+  var history=getHistory();
+  var list=document.getElementById('history-list');
+  var dates=Object.keys(history).sort().reverse();
+
+  if(dates.length===0){
+    list.innerHTML='<div class="history-empty">No saved logs yet.<br>Use "Save Day to History" to save a day\'s log.</div>';
+  } else {
+    list.innerHTML='';
+    dates.forEach(function(date){
+      var day=history[date];
+      var tripCount=day.trips?day.trips.length:0;
+      var savedAt=day.savedAt?new Date(day.savedAt).toLocaleString():'';
+
+      var item=document.createElement('div');
+      item.className='history-item';
+
+      var info=document.createElement('div');
+      info.innerHTML='<div class="history-date">&#128197; '+formatDate(date)+'</div>'
+        +'<div class="history-meta">'+tripCount+' trip'+(tripCount!==1?'s':'')+' &bull; Saved '+savedAt+'</div>';
+
+      var dlBtn=document.createElement('button');
+      dlBtn.className='history-dl-btn';
+      dlBtn.innerHTML='&#x2B07; Download';
+      dlBtn.addEventListener('click', (function(d){ return function(){ downloadHistoryDay(d); }; })(date));
+
+      var delBtn=document.createElement('button');
+      delBtn.className='history-del-btn';
+      delBtn.innerHTML='&#x2715;';
+      delBtn.addEventListener('click', (function(d){ return function(){ deleteHistoryDay(d, delBtn); }; })(date));
+
+      item.appendChild(info);
+      item.appendChild(dlBtn);
+      item.appendChild(delBtn);
+      list.appendChild(item);
+    });
+  }
+  document.getElementById('history-overlay').classList.add('open');
+}
+
+function closeHistory(){
+  document.getElementById('history-overlay').classList.remove('open');
+}
+
+function formatDate(dateStr){
+  try{
+    var d=new Date(dateStr+'T00:00:00');
+    return d.toLocaleDateString('en-US',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+  }catch(e){ return dateStr; }
+}
+
+function deleteHistoryDay(date, btn){
+  if(!confirm('Delete log for '+formatDate(date)+'?')) return;
+  var history=getHistory();
+  delete history[date];
+  saveHistory(history);
+  // Also remove sig keys for this day's trips
+  btn.closest('.history-item').remove();
+  var list=document.getElementById('history-list');
+  if(!list.querySelector('.history-item')){
+    list.innerHTML='<div class="history-empty">No saved logs yet.<br>Use "Save Day to History" to save a day\'s log.</div>';
+  }
+}
+
+function downloadHistoryDay(date){
+  var history=getHistory();
+  var day=history[date];
+  if(!day){ alert('Log not found.'); return; }
+
+  // Force save all trips into dataset before download
+  var trips=day.trips||[];
+  var driverSigImg=day.driverSig||'';
+  var provider=day.provider||'';
+  var licenseVal=day.license||'';
+  var vinVal=day.vin||'';
+  var driverName=day.driverName||'';
+
+  var tripsStr=JSON.stringify(trips);
+  var driverSigStr=driverSigImg?JSON.stringify(driverSigImg):'null';
+  var fieldsStr=JSON.stringify({provider:provider,date:date,license:licenseVal,vin:vinVal,driverName:driverName});
+
+  // Get current page HTML and inject history day data
+  var tripsList=document.getElementById('trips-list');
+  var savedHTML=tripsList.innerHTML;
+  tripsList.innerHTML='';
+
+  // Reset auth state so downloaded file opens at login screen
+  var _ao=document.getElementById('auth-overlay');
+  var _aod=_ao?_ao.style.display:'';
+  if(_ao) _ao.style.display='flex';
+  var _hu=document.getElementById('header-username');
+  var _hut=_hu?_hu.textContent:'';
+  if(_hu) _hu.textContent='';
+
+  var html=document.documentElement.outerHTML;
+
+  tripsList.innerHTML=savedHTML;
+  if(_ao) _ao.style.display=_aod;
+  if(_hu) _hu.textContent=_hut;
+
+  html=replaceInit(html,'_INIT_TRIPS',tripsStr);
+  html=replaceInit(html,'_INIT_DRIVER_SIG',driverSigStr);
+  html=replaceInit(html,'_INIT_FIELDS',fieldsStr);
+  // Embed users so other devices can log in
+  var usersForHistEmbed=getUsers();
+  html=replaceInit(html,'_INIT_USERS',JSON.stringify(usersForHistEmbed));
+  html=replaceInit(html,'_IS_DOWNLOADED','true');
+  html='<!DOCTYPE html>\n'+html;
+
+  var blob=new Blob([html],{type:'text/html'});
+  var url=URL.createObjectURL(blob);
+  var link=document.createElement('a');
+  link.href=url;
+  link.download='Erta_Ale_Trip_Log_'+date+'.html';
+  document.body.appendChild(link);
+  setTimeout(function(){ link.click(); document.body.removeChild(link); URL.revokeObjectURL(url); },100);
+}
+
+// Close history overlay when clicking outside
+document.addEventListener('click', function(e){
+  var overlay=document.getElementById('history-overlay');
+  if(overlay && e.target===overlay) closeHistory();
+});
+
+
+/* ══════════════════════════════════════════
+   EXCEL / CSV IMPORT SYSTEM
+   ══════════════════════════════════════════ */
+
+var _importRows = []; // parsed rows ready to import
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function openImport(){
+  document.getElementById('import-overlay').classList.add('open');
+  document.getElementById('import-preview').style.display='none';
+  document.getElementById('import-confirm-btn').style.display='none';
+  document.getElementById('import-tbody').innerHTML='';
+  document.getElementById('import-msg').textContent='';
+  document.getElementById('import-file-input').value='';
+  _importRows=[];
+}
+
+function closeImport(){
+  document.getElementById('import-overlay').classList.remove('open');
+}
+
+function handleImportDrop(e){
+  e.preventDefault();
+  var file=e.dataTransfer.files[0];
+  if(file) processImportFile(file);
+}
+
+function handleImportFile(input){
+  var file=input.files[0];
+  if(file) processImportFile(file);
+}
+
+function processImportFile(file){
+  var msg=document.getElementById('import-msg');
+  msg.textContent='Reading file...';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var data=e.target.result;
+      var workbook=XLSX.read(data,{type:'array',cellDates:true});
+      var sheet=workbook.Sheets[workbook.SheetNames[0]];
+      var rows=XLSX.utils.sheet_to_json(sheet,{defval:''});
+      if(rows.length===0){ msg.textContent='No data found in file.'; return; }
+      parseImportRows(rows);
+    }catch(err){
+      msg.textContent='Error reading file: '+err.message;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function parseTimeRaw(rawVal){
+  // Returns {schedTime:'HH:MM', ampm:'AM'|'PM'|''}
+  if(!rawVal && rawVal!==0) return {schedTime:'',ampm:''};
+  var s = rawVal.toString().trim();
+
+  // "Will Call" or non-time strings
+  if(s.toLowerCase()==='will call'||s.toLowerCase()==='willcall') return {schedTime:'',ampm:'',callActive:true};
+
+  // Excel numeric time serial (fraction of a day e.g. 0.34375 = 8:15 AM)
+  var num = parseFloat(s);
+  if(!isNaN(num) && num>=0 && num<1){
+    var totalMins = Math.round(num * 24 * 60);
+    var h = Math.floor(totalMins/60), m = totalMins%60;
+    var period = h<12?'AM':'PM';
+    var h24 = h;
+    var schedTime=(h24<10?'0':'')+h24+':'+(m<10?'0':'')+m;
+    return {schedTime:schedTime, ampm:period};
+  }
+
+  // "08:15 AM", "8:15AM", "13:30", "1:15 PM"
+  var match = s.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+  if(match){
+    var h=parseInt(match[1]), min=match[2], period=(match[3]||'').toUpperCase();
+    if(!period) period = h>=12?'PM':'AM';
+    var h24=h;
+    if(period==='PM' && h!==12) h24=h+12;
+    if(period==='AM' && h===12) h24=0;
+    var schedTime=(h24<10?'0':'')+h24+':'+min;
+    return {schedTime:schedTime, ampm:period};
+  }
+
+  return {schedTime:'', ampm:''};
+}
+
+function parseImportRows(rows){
+  _importRows=[];
+  rows.forEach(function(row,i){
+    var firstName = (row["Member's First Name"]||row["MembersFirstName"]||row["First Name"]||'').toString().trim();
+    var lastName  = (row["Member's Last Name"] ||row["MembersLastName"] ||row["Last Name"] ||'').toString().trim();
+    var memberName= [firstName,lastName].filter(Boolean).join(' ');
+
+    var tripNum   = (row["Trip Number"]||row["Trip #"]||row["TripNumber"]||'').toString().trim();
+
+    var timeRaw   = row["Time"]||row["Pickup Time"]||row["Scheduled Time"]||'';
+    var parsed    = parseTimeRaw(timeRaw);
+    var schedTime = parsed.schedTime;
+    var ampm      = parsed.ampm;
+    var callActive= parsed.callActive||false;
+
+    // Fall back to Trip Type for AM/PM if time had no period
+    if(!ampm){
+      var tripType=(row["Trip Type"]||'').toString().trim().toUpperCase();
+      ampm = tripType==='T'?'AM': tripType==='F'?'PM':'';
+    }
+
+    // If "Will Call", activate the Call toggle
+    if(callActive){
+      var tripType=(row["Trip Type"]||'').toString().trim().toUpperCase();
+      ampm = tripType==='T'?'AM': tripType==='F'?'PM':'';
+    }
+
+    _importRows.push({ tn:tripNum, mn:memberName, ampm:ampm, sched:schedTime, callActive:callActive });
+  });
+
+  // Show preview table
+  var tbody=document.getElementById('import-tbody');
+  tbody.innerHTML='';
+  _importRows.forEach(function(r,i){
+    var tr=document.createElement('tr');
+    var timeDisplay = r.callActive ? '<em style="color:#1a56db">Will Call</em>' : (r.sched||'--');
+    tr.innerHTML='<td>'+(i+1)+'</td><td>'+r.tn+'</td><td>'+r.mn+'</td><td>'+r.ampm+'</td><td>'+timeDisplay+'</td>';
+    tbody.appendChild(tr);
+  });
+  document.getElementById('import-preview').style.display='block';
+  document.getElementById('import-confirm-btn').style.display='block';
+  document.getElementById('import-msg').textContent=_importRows.length+' trips found. Review and click ✔ Import Trips.';
+}
+
+function confirmImport(){
+  if(_importRows.length===0){ alert('No trips to import.'); return; }
+  if(!confirm('This will replace all current trip entries with '+_importRows.length+' imported trips. Continue?')) return;
+
+  // Sort: by member first name A→Z, then by trip number suffix (A before B, etc.)
+  var sorted = _importRows.slice().sort(function(a, b){
+    var nameA = (a.mn||'').trim().split(' ')[0].toUpperCase();
+    var nameB = (b.mn||'').trim().split(' ')[0].toUpperCase();
+    if(nameA < nameB) return -1;
+    if(nameA > nameB) return  1;
+    // Same first name — sort by trip number suffix (last letter)
+    var sufA = (a.tn||'').replace(/\d/g,'').toUpperCase();
+    var sufB = (b.tn||'').replace(/\d/g,'').toUpperCase();
+    // Extract trailing letter(s) from trip number e.g. M3H303P3L0A → 'A'
+    var lastA = (a.tn||'').slice(-1).toUpperCase();
+    var lastB = (b.tn||'').slice(-1).toUpperCase();
+    if(lastA < lastB) return -1;
+    if(lastA > lastB) return  1;
+    return 0;
+  });
+
+  closeImport();
+  document.getElementById('trips-list').innerHTML='';
+  tripCount=0;
+  sorted.forEach(function(r,i){
+    setTimeout(function(){
+      addTrip({tn:r.tn, mn:r.mn, ampm:r.ampm, sched:r.sched, callActive:r.callActive});
+      if(i===sorted.length-1) saveFormState();
+    }, i*30);
+  });
+}
+
+// Close import overlay when clicking outside
+document.addEventListener('click', function(e){
+  var overlay=document.getElementById('import-overlay');
+  if(overlay && e.target===overlay) closeImport();
+});
+
+
+/* ══════════════════════════════════════════
+   ACTIVITY LOG
+   ══════════════════════════════════════════ */
+
+function activityKey(){ return 'erta_activity_log'; }
+
+function logActivity(user, action){
+  var log=tryLS(function(){ return JSON.parse(localStorage.getItem(activityKey())||'[]'); })||[];
+  log.unshift({ user:user, action:action, time:new Date().toISOString() });
+  if(log.length>200) log=log.slice(0,200); // keep last 200 entries
+  tryLS(function(){ localStorage.setItem(activityKey(), JSON.stringify(log)); });
+}
+
+function renderActivityLog(){
+  var list=document.getElementById('activity-log-list');
+  if(!list) return;
+  var log=tryLS(function(){ return JSON.parse(localStorage.getItem(activityKey())||'[]'); })||[];
+  if(log.length===0){
+    list.innerHTML='<div style="text-align:center;color:#9ca3af;font-size:12px;padding:20px;">No activity recorded yet.</div>';
+    return;
+  }
+  list.innerHTML='';
+  log.forEach(function(entry){
+    var div=document.createElement('div');
+    div.className='activity-item';
+    var t=new Date(entry.time);
+    var timeStr=t.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+t.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    div.innerHTML='<span class="activity-time">'+timeStr+'</span>'
+      +'<span class="activity-action"><span class="activity-user">@'+entry.user+'</span> '+entry.action+'</span>';
+    list.appendChild(div);
+  });
+}
+
+function clearActivityLog(){
+  if(!confirm('Clear all activity logs?')) return;
+  tryLS(function(){ localStorage.removeItem(activityKey()); });
+  renderActivityLog();
+}
+
+/* ══════════════════════════════════════════
+   SESSION TIMEOUT — 1 hour inactivity
+   ══════════════════════════════════════════ */
+
+var _sessionTimer=null;
+var _countdownTimer=null;
+var _sessionExpireAt=null;
+var SESSION_DURATION = 60 * 60 * 1000; // 1 hour ms
+var WARN_BEFORE     =  5 * 60 * 1000; // warn 5 min before
+
+function resetSessionTimer(){
+  _sessionExpireAt = Date.now() + SESSION_DURATION;
+  document.getElementById('timeout-bar').classList.remove('show');
+  if(_sessionTimer) clearTimeout(_sessionTimer);
+  if(_countdownTimer) clearInterval(_countdownTimer);
+  // Set timer to show warning 5 min before expiry
+  _sessionTimer=setTimeout(function(){
+    showTimeoutWarning();
+  }, SESSION_DURATION - WARN_BEFORE);
+}
+
+function showTimeoutWarning(){
+  var bar=document.getElementById('timeout-bar');
+  bar.classList.add('show');
+  if(_countdownTimer) clearInterval(_countdownTimer);
+  _countdownTimer=setInterval(function(){
+    var remaining=Math.max(0, _sessionExpireAt - Date.now());
+    var mins=Math.floor(remaining/60000);
+    var secs=Math.floor((remaining%60000)/1000);
+    document.getElementById('timeout-countdown').textContent=mins+':'+(secs<10?'0':'')+secs;
+    if(remaining<=0){
+      clearInterval(_countdownTimer);
+      forceSignOut();
+    }
+  }, 1000);
+}
+
+function forceSignOut(){
+  document.getElementById('timeout-bar').classList.remove('show');
+  stopSessionTimer();
+  logActivity(_currentUser||'unknown', 'auto signed out after 1hr inactivity');
+  saveFormState();
+  stopAutoSave();
+  _currentUser=null;
+  _isAdmin=false;
+  removePersistSession();
+  document.getElementById('trips-list').innerHTML='';
+  tripCount=0;
+  clearSig('driver-sig-canvas','driver-sig-wrap','driver-sig-placeholder','driver-sig-status');
+  ['provider','date','license','vin','driver-name'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('auth-overlay').style.display='flex';
+  showSignIn();
+  alert('You have been signed out due to 1 hour of inactivity.');
+}
+
+function stopSessionTimer(){
+  if(_sessionTimer){ clearTimeout(_sessionTimer); _sessionTimer=null; }
+  if(_countdownTimer){ clearInterval(_countdownTimer); _countdownTimer=null; }
+  var bar=document.getElementById('timeout-bar');
+  if(bar) bar.classList.remove('show');
+}
+
+// Reset timer on any user interaction
+['click','keydown','mousemove','touchstart','scroll'].forEach(function(evt){
+  document.addEventListener(evt, function(){
+    if(_currentUser && _sessionExpireAt){
+      // Only reset if we're not already in the warning window
+      if(Date.now() < _sessionExpireAt - WARN_BEFORE){
+        resetSessionTimer();
+      }
+    }
+  }, {passive:true});
+});
+
+function doAdminReset(){
+  var targetUser=document.getElementById('signin-user').value.trim().toLowerCase();
+  var adminPass=document.getElementById('reset-admin-pass').value;
+  var newPass=document.getElementById('reset-new-pass').value;
+  var msg=document.getElementById('reset-msg');
+  msg.textContent=''; msg.style.color='#92400e';
+  if(!targetUser){msg.textContent='Enter the driver username above first.';return;}
+  if(newPass.length<4){msg.textContent='New password must be at least 4 characters.';return;}
+  var users=getUsers();
+  var ak=Object.keys(users).find(function(k){return users[k].role==='admin';});
+  if(!ak||!_checkPass(adminPass,users[ak].hash)){msg.textContent='Admin password incorrect.';return;}
+  if(!users[targetUser]){msg.textContent='User "'+targetUser+'" not found.';return;}
+  users[targetUser].hash=_encodePass(newPass);
+  saveUsers(users);
+  msg.style.color='#059669';
+  msg.textContent='✅ Password reset for @'+targetUser+'. Sign in with the new password.';
+  document.getElementById('reset-admin-pass').value='';
+  document.getElementById('reset-new-pass').value='';
+}
+
+// ── PWA: Install button + Service Worker ──
+var _deferredInstall = null;
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+  _deferredInstall = e;
+  var btn = document.getElementById('install-pwa-btn');
+  if(btn) btn.style.display = '';
+});
+function installPWA(){
+  if(!_deferredInstall){
+    showToast('App is already installed or running in standalone mode.');
+    return;
+  }
+  _deferredInstall.prompt();
+  _deferredInstall.userChoice.then(function(choice){
+    if(choice.outcome === 'accepted'){
+      showToast('✅ App installed!');
+      var btn = document.getElementById('install-pwa-btn');
+      if(btn) btn.style.display = 'none';
+    }
+    _deferredInstall = null;
+  });
+}
+window.addEventListener('appinstalled', function(){
+  var btn = document.getElementById('install-pwa-btn');
+  if(btn) btn.style.display = 'none';
+  showToast('✅ Installed! Open from home screen anytime.');
+});
+// Hide install button if running in standalone mode (already installed)
+if(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone){
+  document.addEventListener('DOMContentLoaded', function(){
+    var btn = document.getElementById('install-pwa-btn');
+    if(btn) btn.style.display = 'none';
+  });
+}
+
+// Inline service worker for offline support (works only when served from a real URL)
+if('serviceWorker' in navigator && location.protocol !== 'file:'){
+  var swCode = "self.addEventListener('install',function(e){self.skipWaiting();});" +
+               "self.addEventListener('activate',function(e){self.clients.claim();});" +
+               "self.addEventListener('fetch',function(e){" +
+               "  e.respondWith(fetch(e.request).catch(function(){return caches.match(e.request)||new Response('Offline');}));" +
+               "});";
+  try{
+    var swBlob = new Blob([swCode], {type:'application/javascript'});
+    var swUrl = URL.createObjectURL(swBlob);
+    navigator.serviceWorker.register(swUrl).catch(function(err){console.warn('SW failed:',err);});
+  }catch(e){console.warn('SW setup failed:',e);}
+}
+
+</script>
+</body>
+</html>
