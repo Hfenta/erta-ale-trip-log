@@ -961,6 +961,13 @@ function saveAllTrips(){
   }, 50);
 }
 
+/* Shared helper: YYYY-MM-DD_HH-MM stamp for download filenames (colons not allowed on Windows) */
+function fileTimestamp(){
+  var d=new Date();
+  var pad=function(n){return n<10?'0'+n:''+n;};
+  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'_'+pad(d.getHours())+'-'+pad(d.getMinutes());
+}
+
 /* Shared helper: replace _INIT_ constants in HTML string */
 function replaceInit(src, name, value){
   var marker = 'var '+name+' = ';
@@ -1041,10 +1048,7 @@ function downloadLog(){
   const url=URL.createObjectURL(blob);
   const link=document.createElement('a');
   link.href=url;
-  // Fixed filename so every download overwrites the same file in Downloads.
-  // New date of service = same file but with new data inside.
-  // This way drivers always work with one file, not accumulate many.
-  link.download = 'Erta_Ale_Trip_Log.html';
+  link.download = 'Erta_Ale_Trip_Log_'+fileTimestamp()+'.html';
   document.body.appendChild(link);
   // Try Save As dialog (Chrome/Edge) — falls back to normal download
   var dlFilename = link.download;
@@ -2056,7 +2060,7 @@ function downloadHistoryDay(date){
   var url=URL.createObjectURL(blob);
   var link=document.createElement('a');
   link.href=url;
-  link.download='Erta_Ale_Trip_Log_'+date+'.html';
+  link.download='Erta_Ale_Trip_Log_'+date+'_'+fileTimestamp()+'.html';
   document.body.appendChild(link);
   setTimeout(function(){ link.click(); document.body.removeChild(link); URL.revokeObjectURL(url); },100);
 }
