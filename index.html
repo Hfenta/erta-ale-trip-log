@@ -295,6 +295,12 @@
 
       <!-- Tab: Manage Users -->
       <div id="ap-users" style="display:none;">
+        <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap;">
+          <button onclick="exportUsers()" style="font-size:11px;color:white;background:var(--blue);border:none;border-radius:6px;padding:6px 10px;cursor:pointer;font-family:inherit;font-weight:600;">&#x2B07; Export Users</button>
+          <button onclick="document.getElementById('import-users-file').click()" style="font-size:11px;color:var(--blue);background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:6px;padding:6px 10px;cursor:pointer;font-family:inherit;font-weight:600;">&#x2B06; Import Users</button>
+          <input type="file" id="import-users-file" accept=".json,application/json" style="display:none" onchange="importUsers(this)">
+          <span style="font-size:10px;color:#9ca3af;flex:1;min-width:160px;">Move accounts between devices.</span>
+        </div>
         <div id="users-list-section"></div>
       </div>
 
@@ -1185,6 +1191,59 @@ function saveUsers(u){
   tryLS(function(){ localStorage.setItem('erta_ale_users_backup', JSON.stringify(u)); });
   /* Update in-memory so current session sees changes immediately */
   window._EMBEDDED_USERS = u;
+}
+
+/* Export users to a JSON file so the admin can carry accounts between devices */
+function exportUsers(){
+  if(!_isAdmin){ alert('Admin only.'); return; }
+  var users=getUsers();
+  var payload={ _type:'erta_ale_users', _version:1, exportedAt:new Date().toISOString(), users:users };
+  var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var link=document.createElement('a');
+  link.href=url;
+  link.download='erta_ale_users_'+fileTimestamp()+'.json';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(function(){ URL.revokeObjectURL(url); },1000);
+  logActivity(_currentUser||'admin','exported '+Object.keys(users).length+' user account(s)');
+  showToast('✅ Exported '+Object.keys(users).length+' account(s)');
+}
+
+/* Import users from a JSON file produced by exportUsers — merges with current accounts */
+function importUsers(input){
+  if(!_isAdmin){ alert('Admin only.'); input.value=''; return; }
+  var file=input.files&&input.files[0];
+  if(!file){ return; }
+  var reader=new FileReader();
+  reader.onload=function(e){
+    input.value=''; // allow re-selecting the same file later
+    var raw=e.target.result;
+    var data; try{ data=JSON.parse(raw); }catch(err){ alert('Invalid JSON file.'); return; }
+    var incoming=null;
+    if(data && data.users && typeof data.users==='object') incoming=data.users;
+    else if(data && typeof data==='object' && !Array.isArray(data)) incoming=data; // raw users map
+    if(!incoming){ alert('File does not look like an Erta Ale users export.'); return; }
+    var valid={}, skipped=0;
+    Object.keys(incoming).forEach(function(k){
+      var u=incoming[k];
+      if(u && typeof u==='object' && typeof u.hash==='string' && u.hash.indexOf('pw:')===0){
+        valid[k.toLowerCase()]=u;
+      } else { skipped++; }
+    });
+    var validKeys=Object.keys(valid);
+    if(validKeys.length===0){ alert('No valid accounts found in the file.'); return; }
+    if(!confirm('Import '+validKeys.length+' account(s)?'+(skipped?' ('+skipped+' skipped — invalid format)':'')+'\nExisting accounts with the same username will be overwritten.')) return;
+    var users=getUsers();
+    validKeys.forEach(function(k){ users[k]=valid[k]; });
+    saveUsers(users);
+    logActivity(_currentUser||'admin','imported '+validKeys.length+' user account(s)');
+    showToast('✅ Imported '+validKeys.length+' account(s)');
+    renderUsersList();
+  };
+  reader.onerror=function(){ alert('Could not read the file.'); input.value=''; };
+  reader.readAsText(file);
 }
 function getSavedSession(){
   /* Use sessionStorage so session clears when tab/browser closes.
