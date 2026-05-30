@@ -1547,8 +1547,15 @@ function enterApp(displayName){
   }
   // Auto-save on any change
   startAutoSave();
-  // Start session timeout (1 hour)
-  resetSessionTimer();
+  /* Downloaded snapshots: no Sign Out button, no inactivity timeout.
+     The file is a personal snapshot — closing the tab is the way to exit.
+     This avoids the cycle of sign-out → reopen-file → new tab. */
+  if(_IS_DOWNLOADED){
+    var soBtn=document.querySelector('.signout-btn');
+    if(soBtn) soBtn.style.display='none';
+  } else {
+    resetSessionTimer();
+  }
 }
 
 var _autoSaveTimer=null;
