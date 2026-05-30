@@ -12,7 +12,7 @@ Use it **once retroactively** for each existing feature to catch gaps.
 
 - [x] Everything stays in the single HTML file (`Erta_Ale_Trip_Log_vX.X_PWA.html`). No new JS/CSS files, no new network dependencies.
 - [x] No new CDN / external script at runtime (the file must run from `file://` with no internet). _Net change: Google Fonts CDN removed, XLSX moved to lazy-load + localStorage cache._
-- [ ] Version number in `<title>` and header `<span>` bumped. _Still v2.9 — needs a bump._
+- [x] Version number in `<title>` and header `<span>` bumped. _v2.9 → v3.0._
 - [x] Inline manifest + apple-touch-icon still valid (PWA install must still work).
 
 ## B. Persistence — feature must survive ALL of these transitions
