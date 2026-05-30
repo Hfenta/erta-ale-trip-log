@@ -446,6 +446,7 @@ var _INIT_TRIPS = null;
 var _INIT_DRIVER_SIG = null;
 var _INIT_FIELDS = null;
 var _INIT_USERS = null;
+var _INIT_HISTORY = null; /* {username: {date: dayData}} baked into downloaded copies */
 var _IS_DOWNLOADED = false; /* set to true by downloadLog */
 
 function val(id){const el=document.getElementById(id);return el?el.value:'';}
@@ -1032,6 +1033,7 @@ function downloadLog(){
   // Embed current user accounts so other devices can log in
   var usersForEmbed=getUsers();
   html = replaceInit(html, '_INIT_USERS', JSON.stringify(usersForEmbed));
+  html = replaceInit(html, '_INIT_HISTORY', JSON.stringify(collectAllHistories()));
   html = replaceInit(html, '_IS_DOWNLOADED', 'true');
   html='<!DOCTYPE html>\n'+html;
 
@@ -1870,11 +1872,38 @@ function historyKey(user){ return 'erta_history_'+user; }
 
 function getHistory(){
   var raw=tryLS(()=>localStorage.getItem(historyKey(_currentUser)));
-  try{ return JSON.parse(raw||'{}'); }catch(e){ return {}; }
+  if(raw!=null){
+    try{ return JSON.parse(raw||'{}'); }catch(e){ return {}; }
+  }
+  // Fallback: history baked into a downloaded copy (works even when localStorage is blocked)
+  if(_INIT_HISTORY && _currentUser && _INIT_HISTORY[_currentUser]){
+    try{ return JSON.parse(JSON.stringify(_INIT_HISTORY[_currentUser])); }catch(e){ return {}; }
+  }
+  return {};
 }
 
 function saveHistory(h){
   tryLS(()=>localStorage.setItem(historyKey(_currentUser), JSON.stringify(h)));
+}
+
+// Gather every known user's saved history so a downloaded file carries it forward
+function collectAllHistories(){
+  var out={};
+  if(_INIT_HISTORY){
+    try{ Object.keys(_INIT_HISTORY).forEach(function(u){ out[u]=_INIT_HISTORY[u]; }); }catch(e){}
+  }
+  var users={};
+  try{ users=getUsers()||{}; }catch(e){}
+  var seen={};
+  Object.keys(users).forEach(function(u){ seen[u]=1; });
+  if(_currentUser) seen[_currentUser]=1;
+  Object.keys(seen).forEach(function(u){
+    var raw=tryLS(function(){ return localStorage.getItem(historyKey(u)); });
+    if(raw!=null){
+      try{ out[u]=JSON.parse(raw||'{}'); }catch(e){}
+    }
+  });
+  return out;
 }
 
 function saveDayToHistory(){
@@ -2019,6 +2048,7 @@ function downloadHistoryDay(date){
   // Embed users so other devices can log in
   var usersForHistEmbed=getUsers();
   html=replaceInit(html,'_INIT_USERS',JSON.stringify(usersForHistEmbed));
+  html=replaceInit(html,'_INIT_HISTORY',JSON.stringify(collectAllHistories()));
   html=replaceInit(html,'_IS_DOWNLOADED','true');
   html='<!DOCTYPE html>\n'+html;
 
