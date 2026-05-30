@@ -1430,18 +1430,31 @@ function enterApp(displayName){
   // Show manage users button only for admin
   var muBtn=document.getElementById('manage-users-btn');
   if(muBtn) muBtn.style.display=(_isAdmin)?'inline-block':'none';
-  // Per-user localStorage wins when present; otherwise fall back to the
-  // file's embedded _DOWNLOADED_STATE. This stops one user's downloaded
-  // trips from leaking into another user's view after a role swap.
+  // For downloaded files: the embedded snapshot is the source of truth on every open.
+  // (Without this, localStorage from the live app on the same browser can suppress the
+  // embedded trips/sig and the file appears empty.) For the live app, normal per-user
+  // localStorage rules apply.
   var state=null;
   var lsState=loadFormState(_currentUser);
   var hasLs = lsState && (
     (lsState.trips && lsState.trips.length>0) ||
     lsState.provider || lsState.date || lsState.license || lsState.vin || lsState.driverName
   );
-  if(hasLs){
+  var hasDownloaded = window._DOWNLOADED_STATE && (window._DOWNLOADED_STATE.fields||window._DOWNLOADED_STATE.trips);
+  if(_IS_DOWNLOADED && hasDownloaded){
+    var ds=window._DOWNLOADED_STATE;
+    state={
+      provider:ds.fields&&ds.fields.provider||'',
+      date:ds.fields&&ds.fields.date||'',
+      license:ds.fields&&ds.fields.license||'',
+      vin:ds.fields&&ds.fields.vin||'',
+      driverName:ds.fields&&ds.fields.driverName||'',
+      driverSig:ds.driverSig||'',
+      trips:ds.trips||[]
+    };
+  } else if(hasLs){
     state=lsState;
-  } else if(window._DOWNLOADED_STATE&&(window._DOWNLOADED_STATE.fields||window._DOWNLOADED_STATE.trips)){
+  } else if(hasDownloaded){
     var ds=window._DOWNLOADED_STATE;
     state={
       provider:ds.fields&&ds.fields.provider||'',
@@ -1875,11 +1888,15 @@ function onDateChange(newDate){
 function historyKey(user){ return 'erta_history_'+user; }
 
 function getHistory(){
+  // Downloaded files: embedded snapshot is canonical (matches the form-state behavior in enterApp)
+  if(_IS_DOWNLOADED && _INIT_HISTORY && _currentUser && _INIT_HISTORY[_currentUser]){
+    try{ return JSON.parse(JSON.stringify(_INIT_HISTORY[_currentUser])); }catch(e){}
+  }
   var raw=tryLS(()=>localStorage.getItem(historyKey(_currentUser)));
   if(raw!=null){
     try{ return JSON.parse(raw||'{}'); }catch(e){ return {}; }
   }
-  // Fallback: history baked into a downloaded copy (works even when localStorage is blocked)
+  // Fallback: embedded history when localStorage is blocked entirely
   if(_INIT_HISTORY && _currentUser && _INIT_HISTORY[_currentUser]){
     try{ return JSON.parse(JSON.stringify(_INIT_HISTORY[_currentUser])); }catch(e){ return {}; }
   }
