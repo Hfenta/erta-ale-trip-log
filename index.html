@@ -453,6 +453,7 @@ var _INIT_DRIVER_SIG = null;
 var _INIT_FIELDS = null;
 var _INIT_USERS = null;
 var _INIT_HISTORY = null; /* {username: {date: dayData}} baked into downloaded copies */
+var _INIT_AUTO_USER = null; /* username to auto-sign-in on downloaded files */
 var _IS_DOWNLOADED = false; /* set to true by downloadLog */
 
 function val(id){const el=document.getElementById(id);return el?el.value:'';}
@@ -1047,6 +1048,7 @@ function downloadLog(){
   var usersForEmbed=getUsers();
   html = replaceInit(html, '_INIT_USERS', JSON.stringify(usersForEmbed));
   html = replaceInit(html, '_INIT_HISTORY', JSON.stringify(collectAllHistories()));
+  html = replaceInit(html, '_INIT_AUTO_USER', JSON.stringify(_currentUser||''));
   html = replaceInit(html, '_IS_DOWNLOADED', 'true');
   html='<!DOCTYPE html>\n'+html;
 
@@ -1252,6 +1254,8 @@ function getSavedSession(){
 }
 function savePersistSession(u){
   tryLS(()=>sessionStorage.setItem('erta_ale_session', u));
+  /* Successful sign-in clears the explicit-signout flag so future reloads auto-resume */
+  tryLS(()=>sessionStorage.removeItem('erta_signed_out'));
   /* Also clear any old localStorage sessions so they never auto-login */
   tryLS(()=>localStorage.removeItem('erta_ale_session'));
   tryLS(()=>localStorage.removeItem('erta_session'));
@@ -1762,6 +1766,8 @@ function doSignOut(){
   logActivity(leavingUser, 'signed out');
   _currentUser=null;
   removePersistSession();
+  /* Mark this tab as explicitly signed out so downloaded files don't auto-sign-in again */
+  tryLS(()=>sessionStorage.setItem('erta_signed_out','1'));
   // Clear the form
   document.getElementById('trips-list').innerHTML='';
   tripCount=0;
@@ -1780,11 +1786,18 @@ function checkAuth(){
   tryLS(()=>localStorage.removeItem('erta_ale_session'));
   tryLS(()=>localStorage.removeItem('erta_session'));
   var session=getSavedSession();
+  /* Downloaded files auto-sign-in as the user who created the download
+     (skip if they explicitly signed out in this tab). */
+  var signedOut=tryLS(()=>sessionStorage.getItem('erta_signed_out'))==='1';
+  if(!session && !signedOut && _IS_DOWNLOADED && _INIT_AUTO_USER){
+    session=_INIT_AUTO_USER;
+  }
   if(session){
     var users=getUsers();
     if(users[session]){
       _currentUser=session;
       _isAdmin=(users[session].role==='admin'||session==='admin');
+      savePersistSession(session);
       enterApp(users[session].name||session);
       return true;
     }
@@ -2129,6 +2142,7 @@ function downloadHistoryDay(date){
   var usersForHistEmbed=getUsers();
   html=replaceInit(html,'_INIT_USERS',JSON.stringify(usersForHistEmbed));
   html=replaceInit(html,'_INIT_HISTORY',JSON.stringify(collectAllHistories()));
+  html=replaceInit(html,'_INIT_AUTO_USER',JSON.stringify(_currentUser||''));
   html=replaceInit(html,'_IS_DOWNLOADED','true');
   html='<!DOCTYPE html>\n'+html;
 
