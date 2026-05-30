@@ -1,0 +1,111 @@
+# Erta Ale Trip Log — Feature Requirement Checklist
+
+Use this list **twice** for every feature:
+1. **Before coding** — confirm the design satisfies every box.
+2. **Before shipping** — re-verify by actually clicking through.
+
+Use it **once retroactively** for each existing feature to catch gaps.
+
+---
+
+## A. Architecture rules (non-negotiable)
+
+- [ ] Everything stays in the single HTML file (`Erta_Ale_Trip_Log_vX.X_PWA.html`). No new JS/CSS files, no new network dependencies.
+- [ ] No new CDN / external script at runtime (the file must run from `file://` with no internet).
+- [ ] Version number in `<title>` and header `<span>` bumped.
+- [ ] Inline manifest + apple-touch-icon still valid (PWA install must still work).
+
+## B. Persistence — feature must survive ALL of these transitions
+
+- [ ] Page refresh (F5) — state restored from `localStorage`.
+- [ ] Page refresh on a **downloaded** file — state restored from embedded `_INIT_TRIPS` / `_INIT_USERS` / `_INIT_*` blocks.
+- [ ] `localStorage` blocked (iOS Safari private mode, some `file://` contexts) — feature still works using in-memory fallback (`window._EMBEDDED_USERS`, `_DOWNLOADED_STATE`).
+- [ ] Sign out → sign back in — feature state still there for that user.
+- [ ] Switch user (admin → driver) — state is scoped to the right user, not leaked across accounts.
+- [ ] New day detected (`onDateChange`) — old day auto-archived to history, new day starts clean, feature behaves correctly on day 1.
+
+## C. Download / share workflow
+
+- [ ] `downloadLog()` still produces a working file (same fixed filename so it overwrites in Downloads).
+- [ ] Opened downloaded file lands on the **login screen**, not a logged-in state.
+- [ ] Any data the feature stores is embedded into the downloaded HTML (via `replaceInit` or equivalent) so it travels to other devices.
+- [ ] Driver signature + per-trip signatures survive the download → reopen round-trip.
+- [ ] No duplicate trips after download → reopen → refresh.
+
+## D. Auth, roles, sessions
+
+- [ ] Admin-only actions gated (`getUsers().role === 'admin'` style check) — driver cannot reach them.
+- [ ] Password check still case-insensitive (`_encodePass` lowercases).
+- [ ] Session timeout (1 hour idle) still arms and triggers; activity resets it.
+- [ ] Admin credential change (`changeAdminCredentials`) still works after the feature is added; old username key removed if renamed.
+- [ ] Built-in `admin/admin123` and `driver/driver1` fallback still works when localStorage is empty.
+
+## E. UI / device compatibility
+
+- [ ] Landscape layout at min-width 1100px not broken (horizontal scroll inside `.trips-scroll` still aligns).
+- [ ] Signature pads work with **finger AND Apple Pencil** (touch events + `touch-action:none`).
+- [ ] Tap targets ≥ ~26px height; no zoom on input focus (font-size ≥ 13px on inputs).
+- [ ] Header / info-bar / col-headers still align on iPad landscape and desktop.
+- [ ] No emoji / no unicode that breaks on iOS Safari.
+
+## F. Don't-break-this regression list
+
+Click through each one after the feature lands:
+
+- [ ] Add Trip, fill row, **Save** → row turns green, fields lock, signature locks.
+- [ ] **Edit** a saved trip → fields editable, signature editable, re-Save works.
+- [ ] **Save All Trips** toggles correctly (blue → green → blue).
+- [ ] **Delete mode** (triple-click) shows X buttons, removes a trip, renumbers.
+- [ ] **Sticky fields** (provider, license, VIN, driver name) carry over to next day / next trip.
+- [ ] **XLSX import** still parses, previews, sorts by member name + trip suffix, and populates Will Call / AM-PM correctly.
+- [ ] **Download** then reopen file → all trips present, all sigs present, opens at login.
+- [ ] **History** overlay still lists past days; per-day download still works.
+- [ ] **Admin panel** tabs: Create User, Manage Users, Activity Log, Admin Credentials — all still render and function.
+- [ ] **Change password** (admin changing a user's pw, user changing own pw) still works.
+- [ ] **Auto-save** still writes form state on input changes (no console errors).
+
+## G. Code-quality gates
+
+- [ ] No `console.log` left behind.
+- [ ] No `alert()` used for normal flow (use `showToast`).
+- [ ] All new IDs unique; no clashes with `tn-N`, `ampm-N`, `sig-N` patterns.
+- [ ] All new functions handle the "saved trip" case (read from `dataset.*`, not the hidden input).
+- [ ] All new functions handle the "_restoreOnly" path used during restore from saved state.
+- [ ] No new dependency on `localStorage` without a `tryLS()` wrapper / in-memory fallback.
+
+---
+
+## Retrospective audit — run this against each EXISTING feature
+
+For each feature already in v2.9, walk the same A–G list and write **PASS / FAIL / N/A** next to each box. Anything that fails is a bug to file.
+
+Suggested order to audit:
+1. Sign in / Sign up / Sign out
+2. Admin panel (4 tabs)
+3. Add / Save / Edit / Delete trip
+4. Driver signature + per-trip signatures
+5. Will Call toggle + AM/PM combo
+6. Sticky fields
+7. Auto-save + form-state restore
+8. Download log (fixed filename, embedded state)
+9. History (per-day archive + per-day download)
+10. XLSX import (preview, sort, populate)
+11. Fresh-day detection + auto-archive
+12. Session timeout
+13. Triple-click admin gestures
+14. Password change (self + admin-of-other)
+15. Case-insensitive password matching
+
+---
+
+## Quick "definition of done" (copy into PR description)
+
+```
+[ ] Single-file constraint kept, version bumped
+[ ] Survives refresh / downloaded-file refresh / no-localStorage / sign-out-in / new-day
+[ ] Download → reopen round-trip clean, lands on login
+[ ] Admin/driver role boundary respected
+[ ] Landscape + iPad + Apple Pencil verified
+[ ] Regression checklist (Section F) walked
+[ ] No console errors, no leftover console.log/alert
+```
