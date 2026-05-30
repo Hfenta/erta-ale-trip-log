@@ -21,11 +21,13 @@
 
   <title>Erta Ale — Daily Trip Log v2.9 (2026-04-25)</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+  /* Fonts are intentionally NOT loaded from the network. The font-family
+     stacks below prefer 'DM Sans' / 'DM Mono' when installed locally and
+     fall back to native system fonts so the app renders fully offline. */
   :root{--blue:#1a56db;--blue-light:#ebf2ff;--blue-mid:#93b4f7;--gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-400:#9ca3af;--gray-600:#4b5563;--gray-800:#1f2937;--green:#059669;--green-light:#ecfdf5;--red:#dc2626;--radius:10px;--radius-sm:6px}
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html{scroll-behavior:smooth;overflow-x:auto}
-  body{font-family:'DM Sans',sans-serif;background:var(--gray-100);color:var(--gray-800);min-height:100vh;padding-bottom:40px;min-width:1100px}
+  body{font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--gray-100);color:var(--gray-800);min-height:100vh;padding-bottom:40px;min-width:1100px}
 
   /* ── Header ── */
   .header{background:var(--blue);color:white;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
@@ -43,7 +45,7 @@
   .field{display:flex;flex-direction:column;gap:3px}
   .field label{font-size:11px;font-weight:500;color:var(--gray-600)}
   .field-lbl{display:block;font-size:9.5px;font-weight:600;color:var(--gray-400);letter-spacing:.05em;text-transform:uppercase;margin-bottom:2px}
-  .field input,.field select{height:34px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);padding:0 4px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--gray-800);background:white;width:100%;-webkit-appearance:none;appearance:none}
+  .field input,.field select{height:34px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);padding:0 4px;font-size:13px;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--gray-800);background:white;width:100%;-webkit-appearance:none;appearance:none}
   .field input:focus,.field select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
 
   /* ── Trip entries: horizontal scroll wrapper ── */
@@ -56,7 +58,7 @@
   .col-headers span{font-size:9.5px;font-weight:600;color:var(--gray-400);letter-spacing:.05em;text-transform:uppercase}
   .trip-entry{background:white;border-radius:var(--radius);border:1px solid var(--gray-200);margin-bottom:8px;overflow:visible;min-width:1040px}
   .trip-header{display:flex;align-items:center;padding:7px 12px;background:var(--gray-50);border-bottom:1px solid var(--gray-200);cursor:pointer;user-select:none;-webkit-user-select:none}
-  .trip-badge{background:var(--blue);color:white;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;margin-right:8px;font-family:'DM Mono',monospace}
+  .trip-badge{background:var(--blue);color:white;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;margin-right:8px;font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
   .trip-label{font-size:12px;font-weight:500;flex:1;color:var(--gray-800)}
   .chevron{font-size:9px;color:var(--gray-400);transition:transform .2s}
   .trip-header.collapsed .chevron{transform:rotate(-90deg)}
@@ -73,23 +75,23 @@
   .sig-toolbar{display:flex;justify-content:space-between;align-items:center;padding:2px 5px;background:white;border-top:1px solid var(--gray-200)}
   .sig-status{font-size:9px;color:var(--gray-400)}
   .sig-status.signed-text{color:var(--green);font-weight:600}
-  .sig-clear{font-size:9px;color:var(--red);background:none;border:none;padding:2px 5px;cursor:pointer;border-radius:4px;font-family:'DM Sans',sans-serif}
+  .sig-clear{font-size:9px;color:var(--red);background:none;border:none;padding:2px 5px;cursor:pointer;border-radius:4px;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
 
   /* ── Sched combo / Will Call ── */
   .sched-combo{flex-direction:column!important;align-items:stretch;gap:3px}
   .sched-combo .sched-inputs{display:flex;flex-direction:row;align-items:center;gap:4px}
   select[id^="ampm-"]{padding:0 2px!important;font-size:11px!important;text-align:center}
   input[id^="tn-"]{font-size:10px!important;padding:0 3px!important;letter-spacing:0}
-  .call-toggle{height:34px;padding:0 5px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);background:white;color:var(--gray-600);font-size:10px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0}
+  .call-toggle{height:34px;padding:0 5px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);background:white;color:var(--gray-600);font-size:10px;font-weight:600;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0}
   .call-toggle.call-active{background:var(--blue);color:white;border-color:var(--blue)}
 
   /* ── Trip actions ── */
   .trip-actions{display:flex;flex-direction:column;gap:5px;align-items:stretch}
-  .save-btn{height:26px;padding:0 6px;background:var(--green);color:white;border:none;border-radius:var(--radius-sm);font-size:11px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;width:100%}
+  .save-btn{height:26px;padding:0 6px;background:var(--green);color:white;border:none;border-radius:var(--radius-sm);font-size:11px;font-weight:600;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;cursor:pointer;width:100%}
   .save-btn:active{background:#047857}
-  .edit-btn{height:34px;padding:0 10px;background:var(--blue-light);color:var(--blue);border:1.5px solid var(--blue-mid);border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;width:100%}
+  .edit-btn{height:34px;padding:0 10px;background:var(--blue-light);color:var(--blue);border:1.5px solid var(--blue-mid);border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;cursor:pointer;width:100%}
   .edit-btn:active{background:#dbeafe}
-  .remove-x{background:none;border:1px solid var(--gray-200);border-radius:var(--radius-sm);color:var(--red);font-size:11px;height:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;width:100%}
+  .remove-x{background:none;border:1px solid var(--gray-200);border-radius:var(--radius-sm);color:var(--red);font-size:11px;height:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;width:100%}
   .remove-x:active{background:#fee2e2}
 
   /* ── Saved state ── */
@@ -110,9 +112,9 @@
   .sig-hint-badge{font-size:10px;color:var(--blue);background:var(--blue-light);padding:1px 7px;border-radius:20px;margin-left:5px}
 
   /* ── Add / Import buttons ── */
-  .add-btn{width:100%;padding:10px;border:1.5px dashed var(--gray-200);border-radius:var(--radius);background:white;color:var(--blue);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:6px}
+  .add-btn{width:100%;padding:10px;border:1.5px dashed var(--gray-200);border-radius:var(--radius);background:white;color:var(--blue);font-size:13px;font-weight:500;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:6px}
   .add-btn:active{background:var(--blue-light)}
-  .import-btn{width:100%;padding:10px;border:1.5px dashed #059669;border-radius:var(--radius);background:white;color:#059669;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:6px}
+  .import-btn{width:100%;padding:10px;border:1.5px dashed #059669;border-radius:var(--radius);background:white;color:#059669;font-size:13px;font-weight:500;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:6px}
   .import-btn:active{background:var(--green-light)}
 
   /* ── Import overlay ── */
@@ -121,7 +123,7 @@
   .import-card{background:white;border-radius:16px;width:100%;max-width:520px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25)}
   .import-header{background:#059669;color:white;padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
   .import-header h2{font-size:15px;font-weight:600}
-  .import-close{background:rgba(255,255,255,.2);border:none;color:white;font-size:18px;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif}
+  .import-close{background:rgba(255,255,255,.2);border:none;color:white;font-size:18px;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
   .import-body{padding:18px}
   .import-drop{border:2px dashed #6ee7b7;border-radius:var(--radius);padding:30px;text-align:center;cursor:pointer;background:#f0fdf4;margin-bottom:12px}
   .import-drop:hover{background:#dcfce7;border-color:#059669}
@@ -131,7 +133,7 @@
   .import-preview table{width:100%;border-collapse:collapse;font-size:11px}
   .import-preview th{background:#f3f4f6;padding:4px 8px;text-align:left;font-weight:600;color:#6b7280;border-bottom:1px solid #e5e7eb}
   .import-preview td{padding:4px 8px;border-bottom:1px solid #f3f4f6;color:#1f2937}
-  .import-confirm-btn{width:100%;height:40px;background:#059669;color:white;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;display:none}
+  .import-confirm-btn{width:100%;height:40px;background:#059669;color:white;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;cursor:pointer;display:none}
   .import-confirm-btn:active{background:#047857}
   .import-msg{font-size:12px;color:#6b7280;text-align:center;margin-top:8px}
 
@@ -140,14 +142,14 @@
   .notes-box{background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius);padding:9px 12px;font-size:10.5px;color:#78350f;line-height:1.6;margin-bottom:10px}
   .notes-box strong{font-weight:600}
   .btn-row{display:flex;gap:12px;margin-top:4px;justify-content:center;flex-wrap:wrap}
-  .save-all-btn{height:34px;padding:0 12px;background:var(--blue);color:white;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer}
+  .save-all-btn{height:34px;padding:0 12px;background:var(--blue);color:white;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;cursor:pointer}
   .save-all-btn:active{background:#1444b8}
   .save-all-btn.saved{background:var(--green)}
-  .dl-bottom-btn{height:34px;padding:0 12px;background:#059669;color:white;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer}
+  .dl-bottom-btn{height:34px;padding:0 12px;background:#059669;color:white;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;cursor:pointer}
   .dl-bottom-btn:active{background:#047857}
 
   /* ── Header buttons ── */
-  .history-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-right:6px}
+  .history-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;cursor:pointer;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;margin-right:6px}
   .history-btn:active{background:rgba(255,255,255,.25)}
 
   /* ── History overlay ── */
@@ -156,16 +158,16 @@
   .history-card{background:white;border-radius:16px;width:100%;max-width:600px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
   .history-header{background:var(--blue);color:white;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
   .history-header h2{font-size:15px;font-weight:600}
-  .history-close{background:rgba(255,255,255,.2);border:none;color:white;font-size:18px;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif}
+  .history-close{background:rgba(255,255,255,.2);border:none;color:white;font-size:18px;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
   .history-list{overflow-y:auto;flex:1;padding:10px}
   .history-empty{text-align:center;color:var(--gray-400);font-size:13px;padding:40px 20px}
   .history-item{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
   .history-item:hover{background:var(--blue-light);border-color:var(--blue-mid)}
   .history-date{font-size:14px;font-weight:600;color:var(--gray-800);flex:1}
   .history-meta{font-size:11px;color:var(--gray-400)}
-  .history-dl-btn{height:30px;padding:0 12px;background:var(--blue);color:white;border:none;border-radius:var(--radius-sm);font-size:11px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer}
+  .history-dl-btn{height:30px;padding:0 12px;background:var(--blue);color:white;border:none;border-radius:var(--radius-sm);font-size:11px;font-weight:600;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;cursor:pointer}
   .history-dl-btn:active{background:#1444b8}
-  .history-del-btn{height:30px;padding:0 10px;background:none;color:var(--red);border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-size:11px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer}
+  .history-del-btn{height:30px;padding:0 10px;background:none;color:var(--red);border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-size:11px;font-weight:600;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;cursor:pointer}
   .history-del-btn:active{background:#fee2e2}
 
   /* ── Auth screens ── */
@@ -177,9 +179,9 @@
   .auth-title{font-size:16px;font-weight:600;color:var(--gray-800);margin-bottom:20px;text-align:center}
   .auth-field{margin-bottom:14px}
   .auth-field label{display:block;font-size:11px;font-weight:600;color:var(--gray-600);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
-  .auth-field input{width:100%;height:42px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);padding:0 12px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--gray-800);background:white;-webkit-appearance:none}
+  .auth-field input{width:100%;height:42px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);padding:0 12px;font-size:14px;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--gray-800);background:white;-webkit-appearance:none}
   .auth-field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.12)}
-  .auth-btn{width:100%;height:44px;background:var(--blue);color:white;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:6px}
+  .auth-btn{width:100%;height:44px;background:var(--blue);color:white;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:600;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;cursor:pointer;margin-top:6px}
   .auth-btn:active{background:#1444b8}
   .auth-btn.secondary{background:white;color:var(--blue);border:1.5px solid var(--blue-mid);margin-top:10px}
   .pass-wrap{position:relative;display:flex;align-items:center}
@@ -194,9 +196,9 @@
   .auth-success.show{display:block}
   .user-badge{display:flex;align-items:center;gap:8px}
   .user-badge span{font-size:12px;opacity:.85}
-  .signout-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif}
+  .signout-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;cursor:pointer;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
   .signout-btn:active{background:rgba(255,255,255,.25)}
-  .ap-tab{flex:1;padding:9px 4px;background:none;border:none;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s}
+  .ap-tab{flex:1;padding:9px 4px;background:none;border:none;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s}
   .ap-tab:hover{color:var(--blue)}
   .ap-tab-active{color:var(--blue)!important;border-bottom-color:var(--blue)!important;background:white!important}
   .user-disabled{opacity:.5}
@@ -224,11 +226,15 @@
   .delete-mode .trip-entry.is-saved{cursor:pointer;border-color:var(--red)!important;outline:2px solid var(--red)}
   .delete-mode .trip-entry.is-saved:hover{background:#fff5f5}
   #delete-mode-btn.active{background:var(--red);color:white}
-  #offline-banner{display:none;position:fixed;top:0;left:0;right:0;z-index:99999;background:#f59e0b;color:#fff;text-align:center;padding:6px 12px;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;letter-spacing:.02em}
+  #offline-banner{display:none;position:fixed;top:0;left:0;right:0;z-index:99999;background:#f59e0b;color:#fff;text-align:center;padding:6px 12px;font-size:12px;font-weight:600;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;letter-spacing:.02em}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- XLSX library loaded lazily by ensureXlsxLoaded() so the app runs offline.
+     First successful online load is cached in localStorage ('erta_xlsx_lib')
+     and reused on subsequent visits even when the device is offline. -->
 </head>
 <body>
+
+<div id="offline-banner">&#x26A0; Offline &mdash; changes are saved locally and will travel with the file</div>
 
 <!-- ── Auth Overlay ── -->
 <div class="auth-overlay" id="auth-overlay">
@@ -333,7 +339,7 @@
   <div><h1>Erta Ale — Daily Trip Log</h1><span style="font-size:10px;opacity:.6;margin-left:8px">v2.9</span><p>Landscape view — sign with finger or Apple Pencil</p></div>
   <div class="user-badge">
     <span id="header-username"></span>
-    <button id="install-pwa-btn" onclick="installPWA()" style="display:none;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-right:6px">&#x2B07; Install App</button>
+    <button id="install-pwa-btn" onclick="installPWA()" style="display:none;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;cursor:pointer;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;margin-right:6px">&#x2B07; Install App</button>
       <button class="history-btn" id="manage-users-btn" onclick="openAdminPanel()" style="display:none">&#128737; Users</button>
     <button class="history-btn" onclick="openHistory()">&#128196; History</button>
     <button class="signout-btn" onclick="doSignOut()">Sign Out</button>
@@ -408,7 +414,7 @@
           <span class="sig-status" id="driver-sig-status">Not signed</span>
           <div style="display:flex;gap:6px;align-items:center">
             <button class="sig-clear" onclick="clearSig('driver-sig-canvas','driver-sig-wrap','driver-sig-placeholder','driver-sig-status')">Clear</button>
-            <button id="save-driver-sig-btn" onclick="saveDriverSig()" style="display:none;height:22px;padding:0 8px;background:var(--green);color:white;border:none;border-radius:4px;font-size:10px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer">&#10003; Save Sig</button>
+            <button id="save-driver-sig-btn" onclick="saveDriverSig()" style="display:none;height:22px;padding:0 8px;background:var(--green);color:white;border:none;border-radius:4px;font-size:10px;font-weight:600;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;cursor:pointer">&#10003; Save Sig</button>
           </div>
         </div>
       </div>
@@ -417,7 +423,7 @@
         <img id="driver-sig-img" style="display:block;width:100%;max-height:90px;object-fit:contain">
         <div style="display:flex;justify-content:space-between;padding:2px 6px;background:white;border-top:1px solid #6ee7b7">
           <span style="font-size:9px;color:var(--green);font-weight:600">&#10003; Signed</span>
-          <button onclick="editDriverSig()" style="font-size:9px;color:var(--blue);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif">Edit</button>
+          <button onclick="editDriverSig()" style="font-size:9px;color:var(--blue);background:none;border:none;cursor:pointer;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif">Edit</button>
         </div>
       </div>
     </div>
@@ -425,8 +431,8 @@
   <div class="notes-box"><strong>Notes:</strong> A signature is required for each leg of the transport. If the Member is unable to sign the Trip Log, please have the Facility Staff or Aid sign on behalf of the Member. AM/PM is in Pickup. No shows will be indicated with NS in the Drop-Off Time. I certify that all information contained herein is true and accurate, and understand that this statement is made subject to the applicable penalties under federal and state law for making false declarations.</div>
   <div class="btn-row">
     <button class="save-all-btn" id="save-all-btn" onclick="toggleSaveAllTrips()">&#10003; Save All Trips</button>
-    <button id="clear-all-btn" onclick="tripleClickCheck('clear-all-btn',clearAllTrips)" style="height:34px;padding:0 12px;background:white;color:var(--red);border:1.5px solid var(--red);border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer">&#128465; Clear All</button>
-    <button id="delete-mode-btn" onclick="tripleClickCheck('delete-mode-btn',toggleDeleteMode)" style="height:34px;padding:0 12px;background:white;color:var(--red);border:1.5px solid var(--red);border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer">&#x1F5D1; Delete Trip</button>
+    <button id="clear-all-btn" onclick="tripleClickCheck('clear-all-btn',clearAllTrips)" style="height:34px;padding:0 12px;background:white;color:var(--red);border:1.5px solid var(--red);border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;cursor:pointer">&#128465; Clear All</button>
+    <button id="delete-mode-btn" onclick="tripleClickCheck('delete-mode-btn',toggleDeleteMode)" style="height:34px;padding:0 12px;background:white;color:var(--red);border:1.5px solid var(--red);border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;cursor:pointer">&#x1F5D1; Delete Trip</button>
     <button class="save-all-btn" style="background:var(--blue)" onclick="saveDayToHistory()">&#128190; Save Day to History</button>
     <button class="dl-bottom-btn" onclick="downloadLog()">&#x2B07; Download Trip Log</button>
   </div>
@@ -448,7 +454,7 @@ function val(id){const el=document.getElementById(id);return el?el.value:'';}
 /* ── Signature pad ── */
 function saveDriverSig(){
   var img = canvasToImg('driver-sig-canvas');
-  if(!img){ alert('Please sign first.'); return; }
+  if(!img){ showToast('Please sign first.'); return; }
   // Show the saved image panel, hide the canvas
   var savedDiv = document.getElementById('driver-sig-saved');
   var savedImg = document.getElementById('driver-sig-img');
@@ -469,7 +475,13 @@ function editDriverSig(){
   if(wrap)     wrap.style.display = '';
 }
 function initSigPad(canvasId,wrapId,phId,statId){
-  const canvas=document.getElementById(canvasId);if(!canvas)return;
+  var canvas=document.getElementById(canvasId);if(!canvas)return;
+  if(canvas.dataset.sigInit==='1'){
+    var fresh=canvas.cloneNode(false);
+    canvas.parentNode.replaceChild(fresh, canvas);
+    canvas=fresh;
+  }
+  canvas.dataset.sigInit='1';
   const dpr=window.devicePixelRatio||1;
   const w=canvas.parentElement.offsetWidth||200,h=canvas.offsetHeight||90;
   canvas.width=w*dpr;canvas.height=h*dpr;
@@ -502,6 +514,7 @@ function clearSig(canvasId,wrapId,phId,statId){
   const stat=document.getElementById(statId);if(stat){stat.textContent='Not signed';stat.classList.remove('signed-text');}
   document.getElementById(wrapId)?.classList.remove('signed');
   if(canvasId==='driver-sig-canvas'){var sb=document.getElementById('save-driver-sig-btn');if(sb) sb.style.display='none';}
+  saveFormState();
 }
 
 function canvasToImg(canvasId){
@@ -1029,7 +1042,7 @@ function downloadLog(){
   // Fixed filename so every download overwrites the same file in Downloads.
   // New date of service = same file but with new data inside.
   // This way drivers always work with one file, not accumulate many.
-  link.download = 'Erta_Ale_Trip_Log_'+(date||new Date().toISOString().slice(0,10))+'.html';
+  link.download = 'Erta_Ale_Trip_Log.html';
   document.body.appendChild(link);
   // Try Save As dialog (Chrome/Edge) — falls back to normal download
   var dlFilename = link.download;
@@ -1295,20 +1308,23 @@ function applySticky(sticky){
   if(sticky.driverName!=null&&!val('driver-name')) document.getElementById('driver-name').value=sticky.driverName;
 }
 
-// Compress a canvas/dataUrl to small JPEG for storage
-function compressSig(dataUrl, quality){
-  if(!dataUrl) return '';
-  try{
-    var img=new Image();
-    img.src=dataUrl;
-    var c=document.createElement('canvas');
-    c.width=300; c.height=80;
-    var ctx=c.getContext('2d');
-    ctx.fillStyle='white';
-    ctx.fillRect(0,0,300,80);
-    ctx.drawImage(img,0,0,300,80);
-    return c.toDataURL('image/jpeg', quality||0.5);
-  }catch(e){ return dataUrl; }
+// Compress a canvas/dataUrl to small JPEG for storage (async — waits for image decode)
+function compressSig(dataUrl, quality, callback){
+  if(!dataUrl){ if(callback) callback(''); return; }
+  var img=new Image();
+  img.onload=function(){
+    try{
+      var c=document.createElement('canvas');
+      c.width=300; c.height=80;
+      var ctx=c.getContext('2d');
+      ctx.fillStyle='white';
+      ctx.fillRect(0,0,300,80);
+      ctx.drawImage(img,0,0,300,80);
+      if(callback) callback(c.toDataURL('image/jpeg', quality||0.5));
+    }catch(e){ if(callback) callback(dataUrl); }
+  };
+  img.onerror=function(){ if(callback) callback(dataUrl); };
+  img.src=dataUrl;
 }
 
 function saveFormState(){
@@ -1337,11 +1353,15 @@ function saveFormState(){
     tryLS(()=>localStorage.setItem(formStateKey(_currentUser), JSON.stringify(state)));
     // Store driver sig separately compressed
     var dSig=canvasToImg('driver-sig-canvas');
-    if(dSig) tryLS(()=>localStorage.setItem(formStateKey(_currentUser)+'_dsig', compressSig(dSig,0.6)));
+    if(dSig){
+      var dUser=_currentUser;
+      compressSig(dSig,0.6,function(out){ tryLS(()=>localStorage.setItem(formStateKey(dUser)+'_dsig', out)); });
+    }
     // Store each trip sig separately compressed
     trips.forEach(function(t){
-      if(t.sigImg) tryLS(()=>localStorage.setItem(formStateKey(_currentUser)+'_sig_'+t.id, compressSig(t.sigImg,0.6)));
-      else tryLS(()=>localStorage.removeItem(formStateKey(_currentUser)+'_sig_'+t.id));
+      var tid=t.id, tUser=_currentUser;
+      if(t.sigImg) compressSig(t.sigImg,0.6,function(out){ tryLS(()=>localStorage.setItem(formStateKey(tUser)+'_sig_'+tid, out)); });
+      else tryLS(()=>localStorage.removeItem(formStateKey(tUser)+'_sig_'+tid));
     });
   }catch(e){ console.warn('saveFormState error',e); }
 }
@@ -1404,11 +1424,18 @@ function enterApp(displayName){
   // Show manage users button only for admin
   var muBtn=document.getElementById('manage-users-btn');
   if(muBtn) muBtn.style.display=(_isAdmin)?'inline-block':'none';
-  // Prefer downloaded embedded state, then localStorage, then fresh
+  // Per-user localStorage wins when present; otherwise fall back to the
+  // file's embedded _DOWNLOADED_STATE. This stops one user's downloaded
+  // trips from leaking into another user's view after a role swap.
   var state=null;
-  // Priority: _DOWNLOADED_STATE (from _INIT_TRIPS in file) > localStorage
-  // _INIT_TRIPS is always the source of truth for downloaded files
-  if(window._DOWNLOADED_STATE&&(window._DOWNLOADED_STATE.fields||window._DOWNLOADED_STATE.trips)){
+  var lsState=loadFormState(_currentUser);
+  var hasLs = lsState && (
+    (lsState.trips && lsState.trips.length>0) ||
+    lsState.provider || lsState.date || lsState.license || lsState.vin || lsState.driverName
+  );
+  if(hasLs){
+    state=lsState;
+  } else if(window._DOWNLOADED_STATE&&(window._DOWNLOADED_STATE.fields||window._DOWNLOADED_STATE.trips)){
     var ds=window._DOWNLOADED_STATE;
     state={
       provider:ds.fields&&ds.fields.provider||'',
@@ -1419,10 +1446,6 @@ function enterApp(displayName){
       driverSig:ds.driverSig||'',
       trips:ds.trips||[]
     };
-    // Don't save to localStorage here — let user actions trigger saves
-    // _DOWNLOADED_STATE is rebuilt from _INIT_TRIPS on every refresh
-  } else {
-    state=loadFormState(_currentUser);
   }
   if(state){
     applyFormState(state);
@@ -2047,23 +2070,82 @@ function handleImportFile(input){
   if(file) processImportFile(file);
 }
 
+/* Lazy XLSX loader. Loads from localStorage cache first (offline-friendly),
+   then from CDN (and caches on success). If offline + uncached, calls onErr. */
+var _XLSX_URL='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+var _xlsxLoading=false, _xlsxQueue=[];
+function _runXlsxQueue(err){
+  var q=_xlsxQueue; _xlsxQueue=[]; _xlsxLoading=false;
+  q.forEach(function(p){ if(err) p.onErr(err); else p.cb(); });
+}
+function _injectXlsx(code){
+  try{
+    var s=document.createElement('script');
+    s.text=code;
+    document.head.appendChild(s);
+    return !!window.XLSX;
+  }catch(e){ return false; }
+}
+function ensureXlsxLoaded(cb, onErr){
+  onErr = onErr || function(m){ showToast(m); };
+  if(window.XLSX){ cb(); return; }
+  _xlsxQueue.push({cb:cb,onErr:onErr});
+  if(_xlsxLoading) return;
+  _xlsxLoading=true;
+
+  // 1) Try cache
+  var cached = tryLS(function(){ return localStorage.getItem('erta_xlsx_lib'); });
+  if(cached && _injectXlsx(cached)){ _runXlsxQueue(); return; }
+
+  // 2) Need network
+  if(!navigator.onLine){
+    _runXlsxQueue('Offline — XLSX import needs internet on the first use to download the parser.');
+    return;
+  }
+
+  // 3) Fetch + cache, fall back to script-tag load if fetch is blocked
+  fetch(_XLSX_URL).then(function(r){
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.text();
+  }).then(function(code){
+    tryLS(function(){ try{ localStorage.setItem('erta_xlsx_lib', code); }catch(e){} });
+    if(_injectXlsx(code)) _runXlsxQueue();
+    else _runXlsxQueue('XLSX failed to initialize after download.');
+  }).catch(function(){
+    var s=document.createElement('script');
+    s.src=_XLSX_URL;
+    s.onload=function(){ window.XLSX ? _runXlsxQueue() : _runXlsxQueue('XLSX loaded but undefined.'); };
+    s.onerror=function(){ _runXlsxQueue('Failed to download XLSX library — check internet.'); };
+    document.head.appendChild(s);
+  });
+}
+/* Passive prefetch when online so first import works even after going offline later. */
+if(navigator.onLine && !tryLS(function(){ return localStorage.getItem('erta_xlsx_lib'); })){
+  setTimeout(function(){ ensureXlsxLoaded(function(){}, function(){}); }, 2000);
+}
+
 function processImportFile(file){
   var msg=document.getElementById('import-msg');
-  msg.textContent='Reading file...';
-  var reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      var data=e.target.result;
-      var workbook=XLSX.read(data,{type:'array',cellDates:true});
-      var sheet=workbook.Sheets[workbook.SheetNames[0]];
-      var rows=XLSX.utils.sheet_to_json(sheet,{defval:''});
-      if(rows.length===0){ msg.textContent='No data found in file.'; return; }
-      parseImportRows(rows);
-    }catch(err){
-      msg.textContent='Error reading file: '+err.message;
-    }
-  };
-  reader.readAsArrayBuffer(file);
+  msg.textContent='Loading XLSX parser…';
+  ensureXlsxLoaded(function(){
+    msg.textContent='Reading file...';
+    var reader=new FileReader();
+    reader.onload=function(e){
+      try{
+        var data=e.target.result;
+        var workbook=XLSX.read(data,{type:'array',cellDates:true});
+        var sheet=workbook.Sheets[workbook.SheetNames[0]];
+        var rows=XLSX.utils.sheet_to_json(sheet,{defval:''});
+        if(rows.length===0){ msg.textContent='No data found in file.'; return; }
+        parseImportRows(rows);
+      }catch(err){
+        msg.textContent='Error reading file: '+err.message;
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }, function(errMsg){
+    msg.textContent=errMsg;
+  });
 }
 
 function parseTimeRaw(rawVal){
