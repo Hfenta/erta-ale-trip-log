@@ -62,7 +62,7 @@
   .trip-label{font-size:12px;font-weight:500;flex:1;color:var(--gray-800)}
   .chevron{font-size:9px;color:var(--gray-400);transition:transform .2s}
   .trip-header.collapsed .chevron{transform:rotate(-90deg)}
-  .trip-body{padding:10px 12px}
+  .trip-body{padding:10px 14px}
   .trip-body.hidden{display:none}
   .trip-row{display:grid;grid-template-columns:88px 170px 48px 145px 108px 108px 108px 260px 80px;gap:8px;align-items:end}
 
@@ -91,7 +91,7 @@
   .save-btn:active{background:#047857}
   .edit-btn{height:34px;padding:0 10px;background:var(--blue-light);color:var(--blue);border:1.5px solid var(--blue-mid);border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;cursor:pointer;width:100%}
   .edit-btn:active{background:#dbeafe}
-  .remove-x{background:none;border:1px solid var(--gray-200);border-radius:var(--radius-sm);color:var(--red);font-size:11px;height:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;width:100%}
+  .remove-x{background:none;border:1px solid var(--gray-200);border-radius:var(--radius-sm);color:var(--red);font-size:11px;height:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;width:100%}
   .remove-x:active{background:#fee2e2}
 
   /* ── Saved state ── */
@@ -420,7 +420,7 @@
           <span class="sig-status" id="driver-sig-status">Not signed</span>
           <div style="display:flex;gap:6px;align-items:center">
             <button class="sig-clear" onclick="clearSig('driver-sig-canvas','driver-sig-wrap','driver-sig-placeholder','driver-sig-status')">Clear</button>
-            <button id="save-driver-sig-btn" onclick="saveDriverSig()" style="display:none;height:22px;padding:0 8px;background:var(--green);color:white;border:none;border-radius:4px;font-size:10px;font-weight:600;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;cursor:pointer">&#10003; Save Sig</button>
+            <button id="save-driver-sig-btn" onclick="saveDriverSig()" style="display:none;height:26px;padding:0 8px;background:var(--green);color:white;border:none;border-radius:4px;font-size:10px;font-weight:600;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;cursor:pointer">&#10003; Save Sig</button>
           </div>
         </div>
       </div>
@@ -1850,10 +1850,10 @@ window.addEventListener('load',function(){
 
 
 function getDeviceId(){
-  let id = localStorage.getItem("device_id");
+  let id = tryLS(()=>localStorage.getItem("device_id"));
   if(!id){
     id = "DEV-" + Math.random().toString(36).substr(2,9);
-    localStorage.setItem("device_id", id);
+    tryLS(()=>localStorage.setItem("device_id", id));
   }
   return id;
 }
@@ -2008,7 +2008,7 @@ function collectAllHistories(){
 
 function saveDayToHistory(){
   var date=val('date');
-  if(!date){ alert('Please set a Date of Service before saving to history.'); return; }
+  if(!date){ showToast('Please set a Date of Service before saving to history.'); return; }
 
   // Force save all trips first
   document.querySelectorAll('.trip-entry').forEach(function(entry){
@@ -2358,7 +2358,7 @@ function parseImportRows(rows){
 }
 
 function confirmImport(){
-  if(_importRows.length===0){ alert('No trips to import.'); return; }
+  if(_importRows.length===0){ showToast('No trips to import.'); return; }
   if(!confirm('This will replace all current trip entries with '+_importRows.length+' imported trips. Continue?')) return;
 
   // Sort: by member first name A→Z, then by trip number suffix (A before B, etc.)

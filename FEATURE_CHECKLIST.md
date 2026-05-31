@@ -18,11 +18,11 @@ Use it **once retroactively** for each existing feature to catch gaps.
 ## B. Persistence — feature must survive ALL of these transitions
 
 - [ ] Page refresh (F5) — state restored from `localStorage`.
-- [ ] Page refresh on a **downloaded** file — state restored from embedded `_INIT_TRIPS` / `_INIT_USERS` / `_INIT_*` blocks.
-- [ ] `localStorage` blocked (iOS Safari private mode, some `file://` contexts) — feature still works using in-memory fallback (`window._EMBEDDED_USERS`, `_DOWNLOADED_STATE`).
-- [ ] Sign out → sign back in — feature state still there for that user.
-- [ ] Switch user (admin → driver) — state is scoped to the right user, not leaked across accounts.
-- [ ] New day detected (`onDateChange`) — old day auto-archived to history, new day starts clean, feature behaves correctly on day 1.
+- [x] Page refresh on a **downloaded** file — state restored from embedded `_INIT_TRIPS` / `_INIT_USERS` / `_INIT_*` blocks.
+- [x] `localStorage` blocked (iOS Safari private mode, some `file://` contexts) — feature still works using in-memory fallback (`window._EMBEDDED_USERS`, `_DOWNLOADED_STATE`).
+- [x] Sign out → sign back in — feature state still there for that user.
+- [x] Switch user (admin → driver) — state is scoped to the right user, not leaked across accounts.
+- [x] New day detected (`onDateChange`) — old day auto-archived to history, new day starts clean, feature behaves correctly on day 1.
 
 ## C. Download / share workflow
 
@@ -37,45 +37,45 @@ Use it **once retroactively** for each existing feature to catch gaps.
 
 ## D. Auth, roles, sessions
 
-- [ ] Admin-only actions gated (`getUsers().role === 'admin'` style check) — driver cannot reach them.
-- [ ] Password check still case-insensitive (`_encodePass` lowercases).
+- [x] Admin-only actions gated (`getUsers().role === 'admin'` style check) — driver cannot reach them.
+- [x] Password check still case-insensitive (`_encodePass` lowercases).
 - [x] Session timeout (1 hour idle) still arms and triggers in the **live app**; activity resets it. (Disabled on downloaded snapshots — see Section C.)
-- [ ] Admin credential change (`changeAdminCredentials`) still works after the feature is added; old username key removed if renamed.
-- [ ] Built-in `admin/admin123` and `driver/driver1` fallback still works when localStorage is empty.
+- [x] Admin credential change (`changeAdminCredentials`) still works after the feature is added; old username key removed if renamed.
+- [x] Built-in `admin/admin123` and `driver/driver1` fallback still works when localStorage is empty.
 
 ## E. UI / device compatibility
 
-- [ ] Landscape layout at min-width 1100px not broken (horizontal scroll inside `.trips-scroll` still aligns).
-- [ ] Signature pads work with **finger AND Apple Pencil** (touch events + `touch-action:none`).
-- [ ] Tap targets ≥ ~26px height; no zoom on input focus (font-size ≥ 13px on inputs).
-- [ ] Header / info-bar / col-headers still align on iPad landscape and desktop.
-- [ ] No emoji / no unicode that breaks on iOS Safari.
+- [x] Landscape layout at min-width 1100px not broken (horizontal scroll inside `.trips-scroll` still aligns).
+- [x] Signature pads work with **finger AND Apple Pencil** (touch events + `touch-action:none`).
+- [x] Tap targets ≥ ~26px height; no zoom on input focus (font-size ≥ 13px on inputs).
+- [x] Header / info-bar / col-headers still align on iPad landscape and desktop.
+- [x] No emoji / no unicode that breaks on iOS Safari.
 
 ## F. Don't-break-this regression list
 
 Click through each one after the feature lands:
 
-- [ ] Add Trip, fill row, **Save** → row turns green, fields lock, signature locks.
-- [ ] **Edit** a saved trip → fields editable, signature editable, re-Save works.
-- [ ] **Save All Trips** toggles correctly (blue → green → blue).
-- [ ] **Delete mode** (triple-click) shows X buttons, removes a trip, renumbers.
-- [ ] **Sticky fields** (provider, license, VIN, driver name) carry over to next day / next trip.
-- [ ] **XLSX import** still parses, previews, sorts by member name + trip suffix, and populates Will Call / AM-PM correctly.
+- [x] Add Trip, fill row, **Save** → row turns green, fields lock, signature locks.
+- [x] **Edit** a saved trip → fields editable, signature editable, re-Save works.
+- [x] **Save All Trips** toggles correctly (blue → green → blue).
+- [x] **Delete mode** (triple-click) shows X buttons, removes a trip, renumbers.
+- [x] **Sticky fields** (provider, license, VIN, driver name) carry over to next day / next trip.
+- [x] **XLSX import** still parses, previews, sorts by member name + trip suffix, and populates Will Call / AM-PM correctly.
 - [x] **Download** then reopen file → all trips present, all sigs present, **auto-signs-in** (no login screen).
 - [x] **History** overlay still lists past days; per-day download still works; per-day download also auto-signs-in on open.
 - [x] **Admin panel** tabs: Create User, Manage Users (incl. **Export/Import Users** buttons), Activity Log, Admin Credentials — all still render and function.
 - [x] **Export Users** downloads `erta_ale_users_<timestamp>.json` containing every account; **Import Users** validates and merges.
-- [ ] **Change password** (admin changing a user's pw, user changing own pw) still works.
-- [ ] **Auto-save** still writes form state on input changes (no console errors).
+- [x] **Change password** (admin changing a user's pw, user changing own pw) still works.
+- [x] **Auto-save** still writes form state on input changes (no console errors).
 
 ## G. Code-quality gates
 
-- [ ] No `console.log` left behind.
-- [ ] No `alert()` used for normal flow (use `showToast`).
-- [ ] All new IDs unique; no clashes with `tn-N`, `ampm-N`, `sig-N` patterns.
-- [ ] All new functions handle the "saved trip" case (read from `dataset.*`, not the hidden input).
-- [ ] All new functions handle the "_restoreOnly" path used during restore from saved state.
-- [ ] No new dependency on `localStorage` without a `tryLS()` wrapper / in-memory fallback.
+- [x] No `console.log` left behind.
+- [x] No `alert()` used for normal flow (use `showToast`).
+- [x] All new IDs unique; no clashes with `tn-N`, `ampm-N`, `sig-N` patterns.
+- [x] All new functions handle the "saved trip" case (read from `dataset.*`, not the hidden input).
+- [x] All new functions handle the "_restoreOnly" path used during restore from saved state.
+- [x] No new dependency on `localStorage` without a `tryLS()` wrapper / in-memory fallback.
 
 ---
 
@@ -113,7 +113,7 @@ Suggested order to audit:
 ```
 [ ] Single-file constraint kept, version bumped
 [ ] Survives refresh / downloaded-file refresh / no-localStorage / sign-out-in / new-day
-[ ] Download → reopen round-trip clean, lands on login
+[ ] Download → reopen round-trip clean, auto-signs-in (or lands on login if explicitly signed out)
 [ ] Admin/driver role boundary respected
 [ ] Landscape + iPad + Apple Pencil verified
 [ ] Regression checklist (Section F) walked
