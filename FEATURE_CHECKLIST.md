@@ -101,10 +101,16 @@ Suggested order to audit:
 15. Case-insensitive password matching
 16. [x] **Offline mode** — fonts/XLSX work without internet (no Google Fonts CDN at runtime; XLSX lazy-loaded and cached in `localStorage`); offline banner shows when offline.
 17. [x] **Daily Log History embedded in downloads** (`_INIT_HISTORY`) — history list survives download → reopen, even on a clean device.
-18. [x] **Timestamped download filenames** — both `downloadLog` and `downloadHistoryDay` append `YYYY-MM-DD_HH-MM` so files don't collide.
+18. [x] **Date-only download filenames** — `downloadLog` uses Date of Service (falls back to today) and `downloadHistoryDay` uses the history day's date, both as `YYYY-MM-DD` only. Same-day re-downloads overwrite/prompt for replace; the Export Users JSON still appends `HH-MM` for collision safety.
 19. [x] **Embedded snapshot wins on downloaded files** — `_IS_DOWNLOADED` branch in `enterApp` and `getHistory` prevents stale `localStorage` from suppressing the file's data.
 20. [x] **Export / Import Users** (admin panel, Manage Users tab) — move accounts between devices without bundling a full trip log.
 21. [x] **Auto-sign-in on downloaded files** (`_INIT_AUTO_USER`) — open → straight to the data; no Sign Out button; no inactivity timeout; sign out in the **live app** still works normally.
+22. [x] **Service worker offline** (`sw.js`) — live URL works offline after one online visit. Pre-caches the app shell on install, network-first with cache fallback on every GET, cleans stale caches on activate. Sole exception to the single-file rule (browsers reject `blob:`/`data:` URLs for SW registration). Downloaded HTML files remain self-contained.
+23. [x] **iOS Safari share sheet for Export Users** (`shareOrDownload` helper) — iOS ignores the anchor `download` attribute when triggered programmatically. Helper feature-detects `navigator.canShare({files:[file]})` and pops the native share sheet (Save to Files / AirDrop / Mail) on iPhone/iPad, falls back to anchor-click on desktop/Android. Wired into `exportUsers`; `downloadLog` and `downloadHistoryDay` still pending the same swap.
+24. [x] **Date of Service is non-destructive** — changing the date no longer pops a confirm-and-clear dialog. Imported member names and signatures are preserved across date changes. Use **Save Day to History** to archive explicitly; triple-click **Clear All** to wipe.
+25. [x] **Transparent Import Users diagnostics** — confirm dialog and success toast list the actual usernames being imported. Post-write read-back verifies the `localStorage` write actually landed; warns the admin if the browser silently rejected it (private mode / quota / `file://` restrictions). Forces the Manage Users tab to re-render via `apTab('users')`.
+26. [x] **iOS Save Day to History fix** — replaced fragile `event.target` lookup with `getElementById('save-day-btn')`; added a `showToast` confirmation as a second signal. The implicit global `event` is unreliable on iOS Safari and was throwing **after** the save succeeded, masking the visual confirmation.
+27. [x] **Audit fixes from the v3.0 checklist walk** — tap targets bumped to ≥26px (`.remove-x` 24→26, `#save-driver-sig-btn` 22→26); `.trip-body` padding aligned with `.col-headers` (10px 12px → 10px 14px) so trip-row columns sit directly under their headers; `getDeviceId()` wrapped in `tryLS()` for iOS private mode; normal-flow validation `alert()`s in `saveDayToHistory` and `confirmImport` replaced with `showToast`.
 
 ---
 
