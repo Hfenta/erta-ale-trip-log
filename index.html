@@ -974,6 +974,12 @@ function fileTimestamp(){
   var pad=function(n){return n<10?'0'+n:''+n;};
   return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'_'+pad(d.getHours())+'-'+pad(d.getMinutes());
 }
+/* Shared helper: YYYY-MM-DD only (no time) for date-based filenames */
+function fileDate(){
+  var d=new Date();
+  var pad=function(n){return n<10?'0'+n:''+n;};
+  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+}
 
 /* Shared helper: trigger save/share for a Blob.
    iOS Safari ignores the anchor `download` attribute when triggered programmatically,
@@ -1082,7 +1088,7 @@ function downloadLog(){
   const url=URL.createObjectURL(blob);
   const link=document.createElement('a');
   link.href=url;
-  link.download = 'Erta_Ale_Trip_Log_'+fileTimestamp()+'.html';
+  link.download = 'Erta_Ale_Trip_Log_'+(val('date')||fileDate())+'.html';
   document.body.appendChild(link);
   // Try Save As dialog (Chrome/Edge) — falls back to normal download
   var dlFilename = link.download;
@@ -1256,13 +1262,26 @@ function importUsers(input){
     });
     var validKeys=Object.keys(valid);
     if(validKeys.length===0){ alert('No valid accounts found in the file.'); return; }
-    if(!confirm('Import '+validKeys.length+' account(s)?'+(skipped?' ('+skipped+' skipped — invalid format)':'')+'\nExisting accounts with the same username will be overwritten.')) return;
+    /* Show the actual usernames in the confirm + post-import dialogs so the admin
+       can see exactly which accounts moved over (helps diagnose "import succeeded
+       but I can't see them" cases). */
+    var nameList = validKeys.join(', ');
+    if(!confirm('Import '+validKeys.length+' account(s)?\n\n'+nameList+(skipped?'\n\n('+skipped+' skipped — invalid format)':'')+'\n\nExisting accounts with the same username will be overwritten.')) return;
     var users=getUsers();
     validKeys.forEach(function(k){ users[k]=valid[k]; });
     saveUsers(users);
-    logActivity(_currentUser||'admin','imported '+validKeys.length+' user account(s)');
-    showToast('✅ Imported '+validKeys.length+' account(s)');
-    renderUsersList();
+    /* Verify the write actually landed (LS can fail silently in private mode / quota) */
+    var verifyRaw = tryLS(function(){ return localStorage.getItem('erta_ale_users'); });
+    var verified = {};
+    try{ verified = JSON.parse(verifyRaw||'{}'); }catch(e){}
+    var persistedCount = validKeys.filter(function(k){ return verified[k]; }).length;
+    if(persistedCount !== validKeys.length){
+      alert('Warning: only '+persistedCount+' of '+validKeys.length+' accounts persisted to storage. localStorage may be blocked or full (private mode, quota, file:// restrictions).');
+    }
+    logActivity(_currentUser||'admin','imported '+validKeys.length+' user account(s): '+nameList);
+    showToast('✅ Imported '+validKeys.length+': '+nameList);
+    /* Force-refresh the visible Manage Users list */
+    apTab('users');
   };
   reader.onerror=function(){ alert('Could not read the file.'); input.value=''; };
   reader.readAsText(file);
@@ -2180,7 +2199,7 @@ function downloadHistoryDay(date){
   var url=URL.createObjectURL(blob);
   var link=document.createElement('a');
   link.href=url;
-  link.download='Erta_Ale_Trip_Log_'+date+'_'+fileTimestamp()+'.html';
+  link.download='Erta_Ale_Trip_Log_'+date+'.html';
   document.body.appendChild(link);
   setTimeout(function(){ link.click(); document.body.removeChild(link); URL.revokeObjectURL(url); },100);
 }
