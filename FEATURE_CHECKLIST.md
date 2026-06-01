@@ -22,7 +22,7 @@ Use it **once retroactively** for each existing feature to catch gaps.
 - [x] `localStorage` blocked (iOS Safari private mode, some `file://` contexts) — feature still works using in-memory fallback (`window._EMBEDDED_USERS`, `_DOWNLOADED_STATE`).
 - [x] Sign out → sign back in — feature state still there for that user.
 - [x] Switch user (admin → driver) — state is scoped to the right user, not leaked across accounts.
-- [x] New day detected (`onDateChange`) — old day auto-archived to history, new day starts clean, feature behaves correctly on day 1.
+- [x] Date of Service change (`onDateChange`) — trips, member names, and signatures are preserved across date changes. Archive explicitly via **Save Day to History**; clear explicitly via triple-click **Clear All**.
 
 ## C. Download / share workflow
 

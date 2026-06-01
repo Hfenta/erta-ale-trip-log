@@ -1951,52 +1951,12 @@ function togglePassVis(inputId, btn){
 
 function onDateChange(newDate){
   if(!_currentUser) return;
-  // Get the last saved date for this user
-  var lastDate = tryLS(()=>localStorage.getItem('erta_last_date_'+_currentUser))||'';
-  if(lastDate && lastDate !== newDate){
-    // Day has changed - confirm fresh start
-    var msg = 'Date changed from '+lastDate+' to '+newDate+'.\nStart fresh trip entries for the new day?\n(Current trips will be cleared)';
-    if(confirm(msg)){
-      // Auto-save current day to history before clearing
-      var currentDate=lastDate;
-      if(currentDate){
-        document.querySelectorAll('.trip-entry').forEach(function(entry){
-          var id=entry.id.replace('trip-','');
-          saveTrip(id);
-        });
-        var trips=collectTrips();
-        if(trips.length>0){
-          var history=getHistory();
-          history[currentDate]={
-            date:currentDate,
-            savedAt:new Date().toISOString(),
-            provider:val('provider'),
-            license:val('license'),
-            vin:val('vin'),
-            driverName:val('driver-name'),
-            driverSig:canvasToImg('driver-sig-canvas'),
-            trips:trips
-          };
-          saveHistory(history);
-        }
-      }
-      // Clear all trips and start fresh
-      document.getElementById('trips-list').innerHTML='';
-      tripCount=0;
-      clearSig('driver-sig-canvas','driver-sig-wrap','driver-sig-placeholder','driver-sig-status');
-      addTrip();
-      // Save new date
-      tryLS(()=>localStorage.setItem('erta_last_date_'+_currentUser, newDate));
-      saveFormState();
-    } else {
-      // Revert date back
-      document.getElementById('date').value=lastDate;
-    }
-  } else {
-    // First time setting or same date - just save it
-    tryLS(()=>localStorage.setItem('erta_last_date_'+_currentUser, newDate));
-    saveFormState();
-  }
+  /* Change the Date of Service freely — never auto-clear or auto-archive trips.
+     Imported member names and signatures are preserved across date changes.
+     Use "Save Day to History" to explicitly archive a day, and triple-click
+     "Clear All" if you actually want a fresh slate. */
+  tryLS(()=>localStorage.setItem('erta_last_date_'+_currentUser, newDate));
+  saveFormState();
 }
 
 /* ══════════════════════════════════════════
