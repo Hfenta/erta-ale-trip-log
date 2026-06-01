@@ -10,7 +10,7 @@ Use it **once retroactively** for each existing feature to catch gaps.
 
 ## A. Architecture rules (non-negotiable)
 
-- [x] Everything stays in the single HTML file (`Erta_Ale_Trip_Log_vX.X_PWA.html`). No new JS/CSS files, no new network dependencies.
+- [x] Everything stays in the single HTML file (`Erta_Ale_Trip_Log_vX.X_PWA.html`). No new JS/CSS files, no new network dependencies. _Sole exception: `sw.js` — required by browsers (which refuse to register service workers from blob:/data: URLs) to make the live URL work offline. Downloaded HTML files remain fully self-contained._
 - [x] No new CDN / external script at runtime (the file must run from `file://` with no internet). _Net change: Google Fonts CDN removed, XLSX moved to lazy-load + localStorage cache._
 - [x] Version number in `<title>` and header `<span>` bumped. _v2.9 → v3.0._
 - [x] Inline manifest + apple-touch-icon still valid (PWA install must still work).

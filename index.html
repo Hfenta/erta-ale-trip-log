@@ -2594,36 +2594,12 @@ if(window.matchMedia('(display-mode: standalone)').matches || window.navigator.s
   });
 }
 
-// Inline service worker for offline support (works only when served from a real URL)
-// Service Worker — full offline caching
+// Service Worker — registers ./sw.js for offline caching at the live URL.
+// (Browsers reject blob:/data: URLs for SW registration, so sw.js lives
+// as a separate file alongside index.html. Downloaded HTML files don't
+// need this — they're fully self-contained and run offline from disk.)
 if('serviceWorker' in navigator && location.protocol === 'https:'){
-  try{
-    var _CACHE_NAME='erta-ale-v9';
-    var swLines=[
-      "var CN='erta-ale-v9';",
-      "self.addEventListener('install',function(e){self.skipWaiting();",
-      "  e.waitUntil(caches.open(CN).then(function(c){return c.add('/').catch(function(){});}));",
-      "});",
-      "self.addEventListener('activate',function(e){",
-      "  e.waitUntil(caches.keys().then(function(ks){",
-      "    return Promise.all(ks.filter(function(k){return k!==CN;}).map(function(k){return caches.delete(k);}));",
-      "  }));self.clients.claim();",
-      "});",
-      "self.addEventListener('fetch',function(e){",
-      "  if(e.request.method!=='GET')return;",
-      "  e.respondWith(caches.open(CN).then(function(cache){",
-      "    return fetch(e.request).then(function(r){",
-      "      if(r&&r.status===200)cache.put(e.request,r.clone());return r;",
-      "    }).catch(function(){return cache.match(e.request)||cache.match('/');});",
-      "  }));",
-      "});"
-    ];
-    var swBlob=new Blob([swLines.join('')],{type:'application/javascript'});
-    var swUrl=URL.createObjectURL(swBlob);
-    navigator.serviceWorker.register(swUrl).then(function(reg){
-      caches.open(_CACHE_NAME).then(function(c){c.add(location.href).catch(function(){});});
-    }).catch(function(){});
-  }catch(e){}
+  navigator.serviceWorker.register('./sw.js').catch(function(){});
 }
 
 // Offline / online indicator
