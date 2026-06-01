@@ -439,7 +439,7 @@
     <button class="save-all-btn" id="save-all-btn" onclick="toggleSaveAllTrips()">&#10003; Save All Trips</button>
     <button id="clear-all-btn" onclick="tripleClickCheck('clear-all-btn',clearAllTrips)" style="height:34px;padding:0 12px;background:white;color:var(--red);border:1.5px solid var(--red);border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;cursor:pointer">&#128465; Clear All</button>
     <button id="delete-mode-btn" onclick="tripleClickCheck('delete-mode-btn',toggleDeleteMode)" style="height:34px;padding:0 12px;background:white;color:var(--red);border:1.5px solid var(--red);border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;cursor:pointer">&#x1F5D1; Delete Trip</button>
-    <button class="save-all-btn" style="background:var(--blue)" onclick="saveDayToHistory()">&#128190; Save Day to History</button>
+    <button id="save-day-btn" class="save-all-btn" style="background:var(--blue)" onclick="saveDayToHistory()">&#128190; Save Day to History</button>
     <button class="dl-bottom-btn" onclick="downloadLog()">&#x2B07; Download Trip Log</button>
   </div>
 </div>
@@ -975,6 +975,32 @@ function fileTimestamp(){
   return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'_'+pad(d.getHours())+'-'+pad(d.getMinutes());
 }
 
+/* Shared helper: trigger save/share for a Blob.
+   iOS Safari ignores the anchor `download` attribute when triggered programmatically,
+   so on share-capable mobile browsers (iPhone/iPad) use the Web Share API to invoke
+   the native share sheet (Save to Files, AirDrop, Mail, etc.). */
+function shareOrDownload(blob, filename, mimeType){
+  try{
+    var file=new File([blob], filename, {type: mimeType || blob.type || 'application/octet-stream'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      navigator.share({files:[file], title:filename}).catch(function(err){
+        if(err && err.name!=='AbortError') _anchorDownload(blob, filename);
+      });
+      return;
+    }
+  }catch(e){ /* File ctor or canShare unsupported — fall through to anchor */ }
+  _anchorDownload(blob, filename);
+}
+function _anchorDownload(blob, filename){
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download=filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+
 /* Shared helper: replace _INIT_ constants in HTML string */
 function replaceInit(src, name, value){
   var marker = 'var '+name+' = ';
@@ -1200,15 +1226,9 @@ function exportUsers(){
   if(!_isAdmin){ alert('Admin only.'); return; }
   var users=getUsers();
   var payload={ _type:'erta_ale_users', _version:1, exportedAt:new Date().toISOString(), users:users };
+  var filename='erta_ale_users_'+fileTimestamp()+'.json';
   var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-  var url=URL.createObjectURL(blob);
-  var link=document.createElement('a');
-  link.href=url;
-  link.download='erta_ale_users_'+fileTimestamp()+'.json';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  setTimeout(function(){ URL.revokeObjectURL(url); },1000);
+  shareOrDownload(blob, filename, 'application/json');
   logActivity(_currentUser||'admin','exported '+Object.keys(users).length+' user account(s)');
   showToast('✅ Exported '+Object.keys(users).length+' account(s)');
 }
@@ -2034,12 +2054,15 @@ function saveDayToHistory(){
   history[date]=dayData;
   saveHistory(history);
 
-  // Visual feedback on button
-  var btn=event.target;
-  var orig=btn.innerHTML;
-  btn.innerHTML='✅ Saved to History!';
-  btn.style.background='var(--green)';
-  setTimeout(function(){ btn.innerHTML=orig; btn.style.background=''; }, 2000);
+  // Visual feedback on button (look up by id — `event` global is unreliable on iOS Safari)
+  var btn=document.getElementById('save-day-btn');
+  if(btn){
+    var orig=btn.innerHTML;
+    btn.innerHTML='✅ Saved to History!';
+    btn.style.background='var(--green)';
+    setTimeout(function(){ btn.innerHTML=orig; btn.style.background=''; }, 2000);
+  }
+  showToast('✅ Day saved to history');
 }
 
 function openHistory(){
