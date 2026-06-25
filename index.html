@@ -2407,8 +2407,23 @@ function _pick(row, names){
   return '';
 }
 
+/* Try each regex in order; return the first matching column's value.
+   Used as a fallback when exact aliases don't match the sheet's column names. */
+function _fuzzyPick(row, regexes){
+  for(var i=0;i<regexes.length;i++){
+    for(var k in row){
+      if(Object.prototype.hasOwnProperty.call(row,k) && regexes[i].test(k)){
+        return row[k];
+      }
+    }
+  }
+  return '';
+}
+
 function parseImportRows(rows, sheetName){
   _importRows=[];
+  // Track how many rows produced a value for each field — used for diagnostics below.
+  var hit={name:0, trip:0, time:0};
   rows.forEach(function(row){
     var firstName = (_pick(row,["Member's First Name","MembersFirstName","First Name","FirstName"])||'').toString().trim();
     var lastName  = (_pick(row,["Member's Last Name","MembersLastName","Last Name","LastName"])||'').toString().trim();
@@ -2416,16 +2431,37 @@ function parseImportRows(rows, sheetName){
     if(!memberName){
       memberName = (_pick(row,["Member Name","Member","Name","Passenger","Client","Rider"])||'').toString().trim();
     }
+    if(!memberName){
+      memberName = (_fuzzyPick(row, [/passenger|rider|client|member|patient|customer/i, /\bname\b/i])||'').toString().trim();
+    }
 
-    var tripNum   = (_pick(row,["Trip Number","Trip #","TripNumber","Trip No","Trip"])||'').toString().trim();
+    var tripNum = (_pick(row,["Trip Number","Trip #","TripNumber","Trip No","Trip ID","Trip","Confirmation #","Confirmation Number","Conf #","Order #","Order Number","Reservation #","Reservation Number","Job #","Job Number","Run #","Run Number"])||'').toString().trim();
+    if(!tripNum){
+      tripNum = (_fuzzyPick(row, [
+        /^(trip|order|confirmation|conf|reservation|res|job|run)\s*(number|num|no\.?|#|id)\b/i,
+        /(trip|order|confirmation|conf|reservation|job|run).*(number|num|no\.?|#|id)/i,
+        /^(trip|confirmation|reservation|order|job|run)$/i
+      ])||'').toString().trim();
+    }
 
-    var timeRaw   = _pick(row,["Time","Pickup Time","Scheduled Time","Sched Time","Pickup","Scheduled Pickup"]);
+    var timeRaw = _pick(row,["Time","Pickup Time","Scheduled Time","Sched Time","Pickup","Scheduled Pickup","Appt Time","Appointment Time","Appt","Requested Time","Req Time","PU Time","P/U Time","Pick Up Time","Pick-up Time","Estimated Pickup"]);
+    if(timeRaw===''||timeRaw===undefined||timeRaw===null){
+      timeRaw = _fuzzyPick(row, [
+        /(pickup|pick.?up|p\/?u|sched|scheduled|appt|appointment|requested|req).*\btime\b/i,
+        /\btime\b.*(pickup|pick.?up|p\/?u|sched|scheduled|appt|appointment|requested|req)/i,
+        /^(pickup|pick.?up|p\/?u|appt|appointment)$/i,
+        /\btime\b/i
+      ]);
+    }
     var parsed    = parseTimeRaw(timeRaw);
     var schedTime = parsed.schedTime;
     var ampm      = parsed.ampm;
     var callActive= parsed.callActive||false;
 
-    var tripType  = (_pick(row,["Trip Type","Type"])||'').toString().trim().toUpperCase();
+    var tripType  = (_pick(row,["Trip Type","Type","Direction"])||'').toString().trim().toUpperCase();
+    if(!tripType){
+      tripType = (_fuzzyPick(row,[/^(trip\s*type|type|direction|leg)$/i])||'').toString().trim().toUpperCase();
+    }
     // Fall back to Trip Type for AM/PM if time had no period, or if "Will Call"
     if(!ampm || callActive){
       ampm = tripType==='T'?'AM': tripType==='F'?'PM':ampm;
@@ -2434,23 +2470,26 @@ function parseImportRows(rows, sheetName){
     // Skip totally empty rows (no name, no trip #, no time).
     if(!memberName && !tripNum && !schedTime && !callActive) return;
 
+    if(memberName) hit.name++;
+    if(tripNum)    hit.trip++;
+    if(schedTime||callActive) hit.time++;
+
     _importRows.push({ tn:tripNum, mn:memberName, ampm:ampm, sched:schedTime, callActive:callActive });
   });
 
   var msg=document.getElementById('import-msg');
+  var sample=rows[0]||{};
+  var detectedCols=Object.keys(sample).map(function(k){return '"'+k+'"';}).join(', ') || '(none)';
+
   if(_importRows.length===0){
-    // Nothing matched — show what columns were detected so the user can rename or pick a different sheet.
-    var sample=rows[0]||{};
-    var cols=Object.keys(sample).map(function(k){return '"'+k+'"';}).join(', ') || '(none)';
     document.getElementById('import-preview').style.display='none';
     document.getElementById('import-confirm-btn').style.display='none';
     msg.innerHTML='No trips matched on '+(sheetName?'sheet "'+esc(sheetName)+'"':'this sheet')+
-      '. Detected columns: <span style="color:#1f2937">'+esc(cols)+'</span><br>'+
+      '. Detected columns: <span style="color:#1f2937">'+esc(detectedCols)+'</span><br>'+
       'Expected columns include: First Name, Last Name, Trip Number, Time, Trip Type.';
     return;
   }
 
-  // Show preview table
   var tbody=document.getElementById('import-tbody');
   tbody.innerHTML='';
   _importRows.forEach(function(r,i){
@@ -2461,7 +2500,19 @@ function parseImportRows(rows, sheetName){
   });
   document.getElementById('import-preview').style.display='block';
   document.getElementById('import-confirm-btn').style.display='block';
-  msg.textContent=_importRows.length+' trips found'+(sheetName?' on sheet "'+sheetName+'"':'')+'. Review and click ✔ Import Trips.';
+
+  // Warn if name imported but trip# or time is blank on every row — usually means
+  // the column names don't match any of our aliases or fuzzy patterns.
+  var missing=[];
+  if(hit.trip===0) missing.push('Trip #');
+  if(hit.time===0) missing.push('Time');
+  if(missing.length){
+    msg.innerHTML=_importRows.length+' trips found'+(sheetName?' on sheet "'+esc(sheetName)+'"':'')+
+      ', but no <strong>'+missing.join('</strong> or <strong>')+'</strong> column was matched.<br>'+
+      '<span style="color:#92400e">Detected columns: '+esc(detectedCols)+'</span>';
+  } else {
+    msg.textContent=_importRows.length+' trips found'+(sheetName?' on sheet "'+sheetName+'"':'')+'. Review and click ✔ Import Trips.';
+  }
 }
 
 function confirmImport(){
