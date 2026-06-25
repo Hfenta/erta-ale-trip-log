@@ -2327,8 +2327,10 @@ function parseTimeRaw(rawVal){
   if(!rawVal && rawVal!==0) return {schedTime:'',ampm:''};
   var s = rawVal.toString().trim();
 
-  // "Will Call" or non-time strings
-  if(s.toLowerCase()==='will call'||s.toLowerCase()==='willcall') return {schedTime:'',ampm:'',callActive:true};
+  // "Will Call" variants — strip spaces/hyphens/slashes/periods/underscores
+  // so "Will Call", "Will-Call", "willcall", "WC", "W/C", "W.C." all match.
+  var sNorm = s.toLowerCase().replace(/[\s\-_./\\]/g,'');
+  if(sNorm==='willcall'||sNorm==='wc') return {schedTime:'',ampm:'',callActive:true};
 
   // Excel numeric time serial (fraction of a day e.g. 0.34375 = 8:15 AM)
   var num = parseFloat(s);
@@ -2377,9 +2379,26 @@ function parseImportRows(rows){
 
     // Direct AM/PM column overrides parseTimeRaw's inferred period — when a time
     // like "5:30" has no AM/PM marker, the dedicated column is authoritative.
+    // Also re-compute schedTime so the 24h value matches (otherwise "5:30" + "PM"
+    // would store as "05:30" and sort/display as morning).
     var ampmDirect = (row["AM/PM"]||row["AMPM"]||row["AM PM"]||row["am/pm"]||'').toString().trim().toUpperCase();
-    if(ampmDirect==='AM'||ampmDirect==='A') ampm='AM';
-    else if(ampmDirect==='PM'||ampmDirect==='P') ampm='PM';
+    var ampmCol='';
+    if(ampmDirect==='AM'||ampmDirect==='A') ampmCol='AM';
+    else if(ampmDirect==='PM'||ampmDirect==='P') ampmCol='PM';
+    if(ampmCol && ampmCol!==ampm && schedTime){
+      var tm = schedTime.match(/^(\d{1,2}):(\d{2})$/);
+      if(tm){
+        var h=parseInt(tm[1]), min=parseInt(tm[2]);
+        // Undo parseTimeRaw's 24h conversion to get back to a 12h hour
+        if(ampm==='PM' && h>=13) h-=12;
+        if(ampm==='AM' && h===0) h=12;
+        // Apply the column's period
+        if(ampmCol==='PM' && h<12) h+=12;
+        if(ampmCol==='AM' && h===12) h=0;
+        schedTime=(h<10?'0':'')+h+':'+(min<10?'0':'')+min;
+      }
+    }
+    if(ampmCol) ampm=ampmCol;
 
     // Fall back to Trip Type for AM/PM if time had no period
     if(!ampm){
