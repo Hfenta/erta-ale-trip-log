@@ -2291,7 +2291,11 @@ function processImportFile(file){
         });
         // Show picker whenever there's more than one tab so the user can switch.
         picker.style.display = names.length>1 ? 'block' : 'none';
-        loadImportSheet(names[0]);
+        // Auto-pick the sheet that looks most like trip data (handles workbooks
+        // where the first tab is a summary/dashboard and trips live further in).
+        var best = pickBestSheet(_importWorkbook);
+        select.value = best;
+        loadImportSheet(best);
       }catch(err){
         msg.textContent='Error reading file: '+err.message;
       }
@@ -2305,6 +2309,29 @@ function processImportFile(file){
 /* Look like a trip-schedule header? Used to find the real header row
    when the sheet has a title / blank rows above it. */
 var _IMPORT_HDR_RE = /first name|last name|member|trip|time|pickup|sched|type/i;
+
+/* Score a workbook's tabs and return the one most likely to hold trip data.
+   Avoids picking a dashboard/summary tab when the real trips live elsewhere. */
+function pickBestSheet(workbook){
+  var names = (workbook && workbook.SheetNames) || [];
+  if(names.length <= 1) return names[0];
+  var bestName = names[0], bestScore = -Infinity;
+  for(var i=0; i<names.length; i++){
+    var sheet = workbook.Sheets[names[i]];
+    if(!sheet) continue;
+    var rows = rowsFromSheet(sheet);
+    if(!rows.length) continue;
+    var keys = Object.keys(rows[0]||{});
+    var score = keys.filter(function(k){ return _IMPORT_HDR_RE.test(k); }).length;
+    if(keys.some(function(k){ return /trip|confirmation|booking|order|manifest|reservation/i.test(k) && /num|no\.?|#|id/i.test(k); })) score += 5;
+    if(keys.some(function(k){ return /\btime\b|pickup|sched|appt/i.test(k); })) score += 3;
+    if(keys.some(function(k){ return /name|member|passenger|rider|client/i.test(k); })) score += 3;
+    // Mild bonus for sheets with more data rows (likely the manifest, not a summary).
+    score += Math.min(rows.length, 50) * 0.1;
+    if(score > bestScore){ bestScore = score; bestName = names[i]; }
+  }
+  return bestName;
+}
 
 function rowsFromSheet(sheet){
   // First try the simple case: row 1 has the column headers.
