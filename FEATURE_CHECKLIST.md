@@ -28,7 +28,7 @@ Use it **once retroactively** for each existing feature to catch gaps.
 
 - [x] `downloadLog()` still produces a working file. Filename includes a `YYYY-MM-DD_HH-MM` timestamp so repeat downloads don't overwrite each other.
 - [x] Opened downloaded file **auto-signs-in as the user who downloaded it** (via `_INIT_AUTO_USER`) — no login screen, lands directly on the data.
-- [x] On a downloaded file, the Sign Out button is hidden and the 1-hour inactivity timeout does NOT arm (exit by closing the tab).
+- [x] On a downloaded file, the Sign Out button is hidden and the 6-hour inactivity timeout does NOT arm (exit by closing the tab).
 - [x] Any data the feature stores is embedded into the downloaded HTML (via `replaceInit` or equivalent) so it travels to other devices.
 - [x] Driver signature + per-trip signatures survive the download → reopen round-trip.
 - [x] No duplicate trips after download → reopen → refresh.
@@ -39,7 +39,7 @@ Use it **once retroactively** for each existing feature to catch gaps.
 
 - [x] Admin-only actions gated (`getUsers().role === 'admin'` style check) — driver cannot reach them.
 - [x] Password check still case-insensitive (`_encodePass` lowercases).
-- [x] Session timeout (1 hour idle) still arms and triggers in the **live app**; activity resets it. (Disabled on downloaded snapshots — see Section C.)
+- [x] Session timeout (6 hours idle) still arms and triggers in the **live app**; activity resets it. (Disabled on downloaded snapshots — see Section C.)
 - [x] Admin credential change (`changeAdminCredentials`) still works after the feature is added; old username key removed if renamed.
 - [x] Built-in `admin/admin123` and `driver/driver1` fallback still works when localStorage is empty.
 
@@ -111,6 +111,9 @@ Suggested order to audit:
 25. [x] **Transparent Import Users diagnostics** — confirm dialog and success toast list the actual usernames being imported. Post-write read-back verifies the `localStorage` write actually landed; warns the admin if the browser silently rejected it (private mode / quota / `file://` restrictions). Forces the Manage Users tab to re-render via `apTab('users')`.
 26. [x] **iOS Save Day to History fix** — replaced fragile `event.target` lookup with `getElementById('save-day-btn')`; added a `showToast` confirmation as a second signal. The implicit global `event` is unreliable on iOS Safari and was throwing **after** the save succeeded, masking the visual confirmation.
 27. [x] **Audit fixes from the v3.0 checklist walk** — tap targets bumped to ≥26px (`.remove-x` 24→26, `#save-driver-sig-btn` 22→26); `.trip-body` padding aligned with `.col-headers` (10px 12px → 10px 14px) so trip-row columns sit directly under their headers; `getDeviceId()` wrapped in `tryLS()` for iOS private mode; normal-flow validation `alert()`s in `saveDayToHistory` and `confirmImport` replaced with `showToast`.
+28. [x] **Inactivity timeout extended to 6 hours** — `SESSION_DURATION` bumped from 1h → 6h so a driver mid-shift isn't kicked out between trips. The 5-minute "Stay Logged In" warning bar + countdown still fires before expiry; downloaded snapshots remain timeout-free.
+29. [x] **Excel sheet/tab picker on import** — multi-tab workbooks expose every sheet name in a `<select>` above the preview; switching tabs re-parses without re-uploading. The parsed workbook is cached in `_importWorkbook` so tab switches are instant. Single-sheet files and CSVs hide the picker.
+30. [x] **Smart Excel importer** — handles real-world spreadsheets that previously imported as blanks: (a) `pickBestSheet` scores every tab on initial upload and auto-loads the one that looks most like trip data (header keywords + Trip#/Time/Name presence + row-count bonus), so dashboards/summary tabs in front of the manifest no longer hijack the import; (b) `rowsFromSheet` auto-detects the real header row when title/blank rows sit above it (requires 2+ header-like keys before trusting row 1); (c) `_normHdr` strips every non-alphanumeric char before comparing so `"Trip Number"`, `"TripNumber"`, `"trip_number"`, `"Trip-Number"`, and `"Trip Number"` (non-breaking space) all match the same alias; (d) expanded alias list (`Confirmation #`, `Booking #`, `Manifest #`, `Ticket #`, `Auth #`, `Order #`, `Reservation #`, `Job #`, `Run #`, etc. for Trip #; `Appt Time`, `Requested Time`, `PU Time`, etc. for Time; `Passenger`/`Client`/`Rider`/`Patient` for Name); (e) regex-based `_fuzzyPick` fallback for each field when no exact alias matches; (f) diagnostic message bar prints the **detected column names** when a field can't be matched, so the user can see exactly what's in the sheet. Numeric trip# cells coerce to string (including literal `0`).
 
 ---
 
