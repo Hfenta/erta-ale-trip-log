@@ -397,8 +397,12 @@
         <div class="import-drop" id="import-drop" onclick="document.getElementById('import-file-input').click()" ondragover="event.preventDefault()" ondrop="handleImportDrop(event)">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M12 2v12M8 10l4-4 4 4" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 17v2a2 2 0 002 2h14a2 2 0 002-2v-2" stroke="#059669" stroke-width="2" stroke-linecap="round"/></svg>
           <p>Click or drag &amp; drop your file here</p>
-          <small>Supports .xlsx, .xls, .csv files</small>
+          <small>Supports .xlsx, .xls, .csv files — pick a sheet/tab after upload</small>
           <input type="file" id="import-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleImportFile(this)">
+        </div>
+        <div id="import-sheet-picker" style="display:none;margin-bottom:12px;">
+          <label style="font-size:11px;font-weight:600;color:#6b7280;display:block;margin-bottom:4px;">Sheet / Tab</label>
+          <select id="import-sheet-select" onchange="handleSheetChange()" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:var(--radius-sm);font-size:13px;font-family:inherit;background:white;"></select>
         </div>
         <div class="import-preview" id="import-preview">
           <table id="import-table"><thead><tr><th>#</th><th>Trip #</th><th>Member Name</th><th>AM/PM</th><th>Sched. Pickup</th></tr></thead><tbody id="import-tbody"></tbody></table>
@@ -818,7 +822,8 @@ function saveTrip(id, _restoreOnly){
     wct  = liveVal('wct-'+id);
   }
 
-  // Sig: overlay/canvas first, then _restoreOnly
+  // Sig: overlay/canvas first, then _restoreOnly, then existing dataset
+  // (re-saving an already-saved trip whose canvas is hidden must not blank the sig).
   var sigImg='';
   var wrap=document.getElementById('sig-wrap-'+id);
   var overlay=wrap?wrap.querySelector('.sig-restore-img'):null;
@@ -828,6 +833,7 @@ function saveTrip(id, _restoreOnly){
     sigImg=canvasToImg('sig-'+id);
   }
   if(!sigImg&&_restoreOnly&&_restoreOnly.sigImg) sigImg=_restoreOnly.sigImg;
+  if(!sigImg&&entry.classList.contains('is-saved')&&entry.dataset.sigImg) sigImg=entry.dataset.sigImg;
 
   const schedDisplay = callActive ? 'Will Call' : (sched?to12hr(sched):'—');
 
@@ -2009,8 +2015,10 @@ function saveDayToHistory(){
   var date=val('date');
   if(!date){ showToast('Please set a Date of Service before saving to history.'); return; }
 
-  // Force save all trips first
-  document.querySelectorAll('.trip-entry').forEach(function(entry){
+  // Flush any in-progress edits. Skip already-saved trips: re-running saveTrip
+  // on them reads the now-hidden canvas, which can come back empty (no overlay
+  // is created for freshly-drawn sigs) and would blank dataset.sigImg.
+  document.querySelectorAll('.trip-entry:not(.is-saved)').forEach(function(entry){
     var id=entry.id.replace('trip-','');
     saveTrip(id);
   });
@@ -2176,6 +2184,7 @@ document.addEventListener('click', function(e){
    ══════════════════════════════════════════ */
 
 var _importRows = []; // parsed rows ready to import
+var _importWorkbook = null; // last-parsed workbook so the user can switch sheets without re-uploading
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function openImport(){
@@ -2185,7 +2194,10 @@ function openImport(){
   document.getElementById('import-tbody').innerHTML='';
   document.getElementById('import-msg').textContent='';
   document.getElementById('import-file-input').value='';
+  document.getElementById('import-sheet-picker').style.display='none';
+  document.getElementById('import-sheet-select').innerHTML='';
   _importRows=[];
+  _importWorkbook=null;
 }
 
 function closeImport(){
@@ -2266,11 +2278,20 @@ function processImportFile(file){
     reader.onload=function(e){
       try{
         var data=e.target.result;
-        var workbook=XLSX.read(data,{type:'array',cellDates:true});
-        var sheet=workbook.Sheets[workbook.SheetNames[0]];
-        var rows=XLSX.utils.sheet_to_json(sheet,{defval:''});
-        if(rows.length===0){ msg.textContent='No data found in file.'; return; }
-        parseImportRows(rows);
+        _importWorkbook=XLSX.read(data,{type:'array',cellDates:true});
+        var names=_importWorkbook.SheetNames||[];
+        if(names.length===0){ msg.textContent='No sheets found in file.'; return; }
+        var picker=document.getElementById('import-sheet-picker');
+        var select=document.getElementById('import-sheet-select');
+        select.innerHTML='';
+        names.forEach(function(n){
+          var opt=document.createElement('option');
+          opt.value=n; opt.textContent=n;
+          select.appendChild(opt);
+        });
+        // Show picker whenever there's more than one tab so the user can switch.
+        picker.style.display = names.length>1 ? 'block' : 'none';
+        loadImportSheet(names[0]);
       }catch(err){
         msg.textContent='Error reading file: '+err.message;
       }
@@ -2279,6 +2300,26 @@ function processImportFile(file){
   }, function(errMsg){
     msg.textContent=errMsg;
   });
+}
+
+function loadImportSheet(sheetName){
+  var msg=document.getElementById('import-msg');
+  if(!_importWorkbook){ msg.textContent='No file loaded.'; return; }
+  var sheet=_importWorkbook.Sheets[sheetName];
+  if(!sheet){ msg.textContent='Sheet "'+sheetName+'" not found.'; return; }
+  var rows=XLSX.utils.sheet_to_json(sheet,{defval:''});
+  if(rows.length===0){
+    msg.textContent='No data found on sheet "'+sheetName+'".';
+    document.getElementById('import-preview').style.display='none';
+    document.getElementById('import-confirm-btn').style.display='none';
+    return;
+  }
+  parseImportRows(rows);
+}
+
+function handleSheetChange(){
+  var name=document.getElementById('import-sheet-select').value;
+  if(name) loadImportSheet(name);
 }
 
 function parseTimeRaw(rawVal){
@@ -2463,14 +2504,14 @@ function clearActivityLog(){
 }
 
 /* ══════════════════════════════════════════
-   SESSION TIMEOUT — 1 hour inactivity
+   SESSION TIMEOUT — 6 hour inactivity
    ══════════════════════════════════════════ */
 
 var _sessionTimer=null;
 var _countdownTimer=null;
 var _sessionExpireAt=null;
-var SESSION_DURATION = 60 * 60 * 1000; // 1 hour ms
-var WARN_BEFORE     =  5 * 60 * 1000; // warn 5 min before
+var SESSION_DURATION = 6 * 60 * 60 * 1000; // 6 hours ms
+var WARN_BEFORE     =      5 * 60 * 1000; // warn 5 min before
 
 function resetSessionTimer(){
   _sessionExpireAt = Date.now() + SESSION_DURATION;
@@ -2502,7 +2543,7 @@ function showTimeoutWarning(){
 function forceSignOut(){
   document.getElementById('timeout-bar').classList.remove('show');
   stopSessionTimer();
-  logActivity(_currentUser||'unknown', 'auto signed out after 1hr inactivity');
+  logActivity(_currentUser||'unknown', 'auto signed out after 6hr inactivity');
   saveFormState();
   stopAutoSave();
   _currentUser=null;
@@ -2516,7 +2557,7 @@ function forceSignOut(){
   });
   document.getElementById('auth-overlay').style.display='flex';
   showSignIn();
-  alert('You have been signed out due to 1 hour of inactivity.');
+  alert('You have been signed out due to 6 hours of inactivity.');
 }
 
 function stopSessionTimer(){
