@@ -2362,14 +2362,24 @@ function parseImportRows(rows){
     var firstName = (row["Member's First Name"]||row["MembersFirstName"]||row["First Name"]||'').toString().trim();
     var lastName  = (row["Member's Last Name"] ||row["MembersLastName"] ||row["Last Name"] ||'').toString().trim();
     var memberName= [firstName,lastName].filter(Boolean).join(' ');
+    if(!memberName){
+      // Single combined-name column (sheet tabs that use one "Member Name" cell).
+      memberName = (row["Member Name"]||row["Member name"]||row["MemberName"]||row["Member"]||'').toString().trim();
+    }
 
-    var tripNum   = (row["Trip Number"]||row["Trip #"]||row["TripNumber"]||'').toString().trim();
+    var tripNum   = (row["Trip Number"]||row["Trip #"]||row["TripNumber"]||row["trip #"]||row["trip number"]||'').toString().trim();
 
-    var timeRaw   = row["Time"]||row["Pickup Time"]||row["Scheduled Time"]||'';
+    var timeRaw   = row["Time"]||row["Pickup Time"]||row["Scheduled Time"]||row["Scheduled Pickup"]||row["Schedule Pickup"]||row["Sched Pickup"]||row["schedule pickup"]||row["scheduled pickup"]||'';
     var parsed    = parseTimeRaw(timeRaw);
     var schedTime = parsed.schedTime;
     var ampm      = parsed.ampm;
     var callActive= parsed.callActive||false;
+
+    // Direct AM/PM column overrides parseTimeRaw's inferred period — when a time
+    // like "5:30" has no AM/PM marker, the dedicated column is authoritative.
+    var ampmDirect = (row["AM/PM"]||row["AMPM"]||row["AM PM"]||row["am/pm"]||'').toString().trim().toUpperCase();
+    if(ampmDirect==='AM'||ampmDirect==='A') ampm='AM';
+    else if(ampmDirect==='PM'||ampmDirect==='P') ampm='PM';
 
     // Fall back to Trip Type for AM/PM if time had no period
     if(!ampm){
@@ -2377,10 +2387,12 @@ function parseImportRows(rows){
       ampm = tripType==='T'?'AM': tripType==='F'?'PM':'';
     }
 
-    // If "Will Call", activate the Call toggle
+    // If "Will Call", activate the Call toggle (don't clobber an AM/PM that
+    // was already set via the AM/PM column — only overwrite when Trip Type is set).
     if(callActive){
       var tripType=(row["Trip Type"]||'').toString().trim().toUpperCase();
-      ampm = tripType==='T'?'AM': tripType==='F'?'PM':'';
+      if(tripType==='T') ampm='AM';
+      else if(tripType==='F') ampm='PM';
     }
 
     _importRows.push({ tn:tripNum, mn:memberName, ampm:ampm, sched:schedTime, callActive:callActive });
