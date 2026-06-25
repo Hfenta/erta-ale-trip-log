@@ -2394,15 +2394,19 @@ function parseTimeRaw(rawVal){
   return {schedTime:'', ampm:''};
 }
 
-/* Case-insensitive lookup so "TRIP NUMBER", "trip number", "Trip Number" all match. */
+/* Aggressive header normalization so "Trip Number", "TripNumber",
+   "trip_number", "Trip-Number", and "Trip Number" all collapse to "tripnumber". */
+function _normHdr(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,''); }
+
 function _pick(row, names){
+  var wanted={};
   for(var i=0;i<names.length;i++){
-    var want=names[i].toLowerCase();
-    for(var k in row){
-      if(Object.prototype.hasOwnProperty.call(row,k) && k.toLowerCase().trim()===want){
-        return row[k];
-      }
-    }
+    var n=_normHdr(names[i]); if(n) wanted[n]=1;
+  }
+  for(var k in row){
+    if(!Object.prototype.hasOwnProperty.call(row,k)) continue;
+    var nk=_normHdr(k);
+    if(nk && wanted[nk]) return row[k];
   }
   return '';
 }
@@ -2435,14 +2439,16 @@ function parseImportRows(rows, sheetName){
       memberName = (_fuzzyPick(row, [/passenger|rider|client|member|patient|customer/i, /\bname\b/i])||'').toString().trim();
     }
 
-    var tripNum = (_pick(row,["Trip Number","Trip #","TripNumber","Trip No","Trip ID","Trip","Confirmation #","Confirmation Number","Conf #","Order #","Order Number","Reservation #","Reservation Number","Job #","Job Number","Run #","Run Number"])||'').toString().trim();
-    if(!tripNum){
-      tripNum = (_fuzzyPick(row, [
-        /^(trip|order|confirmation|conf|reservation|res|job|run)\s*(number|num|no\.?|#|id)\b/i,
-        /(trip|order|confirmation|conf|reservation|job|run).*(number|num|no\.?|#|id)/i,
-        /^(trip|confirmation|reservation|order|job|run)$/i
-      ])||'').toString().trim();
+    var tripVal = _pick(row,["Trip Number","Trip #","TripNumber","Trip No","Trip ID","Trip","Confirmation #","Confirmation Number","Conf #","Order #","Order Number","Reservation #","Reservation Number","Job #","Job Number","Run #","Run Number","Booking #","Booking Number","Manifest #","Manifest Number","Ticket #","Auth #","Authorization #","#","No","No.","ID"]);
+    if(tripVal===''||tripVal===null||tripVal===undefined){
+      tripVal = _fuzzyPick(row, [
+        /^(trip|order|confirmation|conf|reservation|res|job|run|booking|manifest|ticket|auth)\s*(number|num|no\.?|#|id)\b/i,
+        /(trip|order|confirmation|conf|reservation|job|run|booking|manifest|ticket|auth).*(number|num|no\.?|#|id)/i,
+        /^(trip|confirmation|reservation|order|job|run|booking|manifest|ticket)$/i,
+        /^\s*#\s*$/
+      ]);
     }
+    var tripNum = (tripVal===null||tripVal===undefined?'':String(tripVal)).trim();
 
     var timeRaw = _pick(row,["Time","Pickup Time","Scheduled Time","Sched Time","Pickup","Scheduled Pickup","Appt Time","Appointment Time","Appt","Requested Time","Req Time","PU Time","P/U Time","Pick Up Time","Pick-up Time","Estimated Pickup"]);
     if(timeRaw===''||timeRaw===undefined||timeRaw===null){
