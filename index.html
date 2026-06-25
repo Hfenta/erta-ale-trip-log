@@ -2333,7 +2333,33 @@ function pickBestSheet(workbook){
   return bestName;
 }
 
+/* Excel stores merged cells as a single value in the top-left, leaving
+   the other addresses empty. Copy the top-left value into every cell of
+   each merge so sheet_to_json sees the same value on every row of the
+   merge (common when a single trip# visually spans multiple pickups). */
+function _unmergeCells(sheet){
+  if(!sheet || !sheet['!merges']) return;
+  sheet['!merges'].forEach(function(m){
+    var anchor = sheet[XLSX.utils.encode_cell({r:m.s.r, c:m.s.c})];
+    if(!anchor) return;
+    for(var r=m.s.r; r<=m.e.r; r++){
+      for(var c=m.s.c; c<=m.e.c; c++){
+        if(r===m.s.r && c===m.s.c) continue;
+        var addr=XLSX.utils.encode_cell({r:r,c:c});
+        var existing=sheet[addr];
+        // Fill the cell if it's missing OR present-but-empty (some exporters add
+        // blank placeholders for the non-anchor cells of a merge range).
+        if(!existing || existing.v===undefined || existing.v===null || existing.v===''){
+          sheet[addr]={t:anchor.t, v:anchor.v};
+          if(anchor.w!==undefined) sheet[addr].w=anchor.w;
+        }
+      }
+    }
+  });
+}
+
 function rowsFromSheet(sheet){
+  _unmergeCells(sheet);
   // First try the simple case: row 1 has the column headers.
   var rows = XLSX.utils.sheet_to_json(sheet, {defval:''});
   if(rows.length){
@@ -2536,17 +2562,37 @@ function parseImportRows(rows, sheetName){
   document.getElementById('import-preview').style.display='block';
   document.getElementById('import-confirm-btn').style.display='block';
 
-  // Warn if name imported but trip# or time is blank on every row — usually means
-  // the column names don't match any of our aliases or fuzzy patterns.
-  var missing=[];
-  if(hit.trip===0) missing.push('Trip #');
-  if(hit.time===0) missing.push('Time');
-  if(missing.length){
-    msg.innerHTML=_importRows.length+' trips found'+(sheetName?' on sheet "'+esc(sheetName)+'"':'')+
-      ', but no <strong>'+missing.join('</strong> or <strong>')+'</strong> column was matched.<br>'+
-      '<span style="color:#92400e">Detected columns: '+esc(detectedCols)+'</span>';
+  // Surface partial-match counts so the user can see "Trip # only matched
+  // on 1/15 rows" — usually means the parser picked the wrong column, or
+  // the values are in merged cells we couldn't fill in.
+  var n=_importRows.length;
+  var warnings=[];
+  if(hit.trip===0) warnings.push('no <strong>Trip #</strong> column matched');
+  else if(hit.trip<n) warnings.push('<strong>Trip #</strong> only on '+hit.trip+'/'+n+' rows');
+  if(hit.time===0) warnings.push('no <strong>Time</strong> column matched');
+  else if(hit.time<n) warnings.push('<strong>Time</strong> only on '+hit.time+'/'+n+' rows');
+
+  var head=n+' trips found'+(sheetName?' on sheet "'+esc(sheetName)+'"':'');
+  if(warnings.length){
+    msg.innerHTML=head+'. <span style="color:#92400e">'+warnings.join('; ')+'.</span>'+
+      '<br><small style="color:#6b7280">Detected columns: '+esc(detectedCols)+'</small>'+
+      '<br><button type="button" onclick="copyImportDebug()" style="margin-top:6px;font-size:11px;padding:4px 10px;border:1px solid #d1d5db;border-radius:6px;background:white;cursor:pointer;font-family:inherit;">&#128203; Copy debug info</button>';
   } else {
-    msg.textContent=_importRows.length+' trips found'+(sheetName?' on sheet "'+sheetName+'"':'')+'. Review and click ✔ Import Trips.';
+    msg.textContent=head+'. Review and click ✔ Import Trips.';
+  }
+
+  // Stash the raw parsed data for the debug-copy button.
+  window._importDebug = { sheet: sheetName, columns: Object.keys(sample), firstRows: rows.slice(0,3) };
+}
+
+function copyImportDebug(){
+  var d=window._importDebug||{};
+  var txt='Sheet: '+(d.sheet||'(none)')+'\nColumns: '+JSON.stringify(d.columns||[])+'\nFirst 3 rows:\n'+JSON.stringify(d.firstRows||[], null, 2);
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(function(){ showToast('Debug info copied — paste it to the developer.'); },
+      function(){ window.prompt('Copy this and share it:', txt); });
+  } else {
+    window.prompt('Copy this and share it:', txt);
   }
 }
 
