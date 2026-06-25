@@ -2311,8 +2311,10 @@ function rowsFromSheet(sheet){
   var rows = XLSX.utils.sheet_to_json(sheet, {defval:''});
   if(rows.length){
     var keys = Object.keys(rows[0]||{});
-    var looksRight = keys.some(function(k){ return _IMPORT_HDR_RE.test(k); });
-    if(looksRight) return rows;
+    // Require 2+ header-like keys so a single title row like "Daily Trip Manifest"
+    // doesn't get mistaken for the real header row.
+    var matches = keys.filter(function(k){ return _IMPORT_HDR_RE.test(k); }).length;
+    if(matches >= 2) return rows;
   }
   // Otherwise scan the first 20 rows for the one with the most header-like cells.
   var matrix = XLSX.utils.sheet_to_json(sheet, {header:1, defval:''});
