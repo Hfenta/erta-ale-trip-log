@@ -2358,20 +2358,35 @@ function parseTimeRaw(rawVal){
   return {schedTime:'', ampm:''};
 }
 
+// Case-insensitive exact-match column lookup (trims whitespace too).
+// Strict — no fuzzy matching, no character stripping. Just "Schedule Pickup"
+// matches "schedule pickup" and "SCHEDULE PICKUP " too.
+function _col(row, names){
+  for(var i=0;i<names.length;i++){
+    var want=names[i].toLowerCase().trim();
+    for(var k in row){
+      if(Object.prototype.hasOwnProperty.call(row,k) && k.toLowerCase().trim()===want){
+        return row[k];
+      }
+    }
+  }
+  return '';
+}
+
 function parseImportRows(rows){
   _importRows=[];
   rows.forEach(function(row,i){
-    var firstName = (row["Member's First Name"]||row["MembersFirstName"]||row["First Name"]||'').toString().trim();
-    var lastName  = (row["Member's Last Name"] ||row["MembersLastName"] ||row["Last Name"] ||'').toString().trim();
+    var firstName = (_col(row,["Member's First Name","MembersFirstName","First Name","FirstName"])||'').toString().trim();
+    var lastName  = (_col(row,["Member's Last Name","MembersLastName","Last Name","LastName"])||'').toString().trim();
     var memberName= [firstName,lastName].filter(Boolean).join(' ');
     if(!memberName){
       // Single combined-name column (sheet tabs that use one "Member Name" cell).
-      memberName = (row["Member Name"]||row["Member name"]||row["MemberName"]||row["Member"]||'').toString().trim();
+      memberName = (_col(row,["Member Name","MemberName","Member"])||'').toString().trim();
     }
 
-    var tripNum   = (row["Trip Number"]||row["Trip #"]||row["TripNumber"]||row["trip #"]||row["trip number"]||'').toString().trim();
+    var tripNum   = (_col(row,["Trip Number","Trip #","TripNumber","Trip No","Trip"])||'').toString().trim();
 
-    var timeRaw   = row["Time"]||row["Pickup Time"]||row["Scheduled Time"]||row["Scheduled Pickup"]||row["Schedule Pickup"]||row["Sched Pickup"]||row["schedule pickup"]||row["scheduled pickup"]||'';
+    var timeRaw   = _col(row,["Time","Pickup Time","Scheduled Time","Scheduled Pickup","Schedule Pickup","Sched Pickup","Sched Time","Appointment Time","Appt Time","Appointment","Appt","Pickup"]);
     var parsed    = parseTimeRaw(timeRaw);
     var schedTime = parsed.schedTime;
     var ampm      = parsed.ampm;
@@ -2381,7 +2396,7 @@ function parseImportRows(rows){
     // like "5:30" has no AM/PM marker, the dedicated column is authoritative.
     // Also re-compute schedTime so the 24h value matches (otherwise "5:30" + "PM"
     // would store as "05:30" and sort/display as morning).
-    var ampmDirect = (row["AM/PM"]||row["AMPM"]||row["AM PM"]||row["am/pm"]||'').toString().trim().toUpperCase();
+    var ampmDirect = (_col(row,["AM/PM","AMPM","AM PM"])||'').toString().trim().toUpperCase();
     var ampmCol='';
     if(ampmDirect==='AM'||ampmDirect==='A') ampmCol='AM';
     else if(ampmDirect==='PM'||ampmDirect==='P') ampmCol='PM';
@@ -2402,14 +2417,14 @@ function parseImportRows(rows){
 
     // Fall back to Trip Type for AM/PM if time had no period
     if(!ampm){
-      var tripType=(row["Trip Type"]||'').toString().trim().toUpperCase();
+      var tripType=(_col(row,["Trip Type","Type"])||'').toString().trim().toUpperCase();
       ampm = tripType==='T'?'AM': tripType==='F'?'PM':'';
     }
 
     // If "Will Call", activate the Call toggle (don't clobber an AM/PM that
     // was already set via the AM/PM column — only overwrite when Trip Type is set).
     if(callActive){
-      var tripType=(row["Trip Type"]||'').toString().trim().toUpperCase();
+      var tripType=(_col(row,["Trip Type","Type"])||'').toString().trim().toUpperCase();
       if(tripType==='T') ampm='AM';
       else if(tripType==='F') ampm='PM';
     }
